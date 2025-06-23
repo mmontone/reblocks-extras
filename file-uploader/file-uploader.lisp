@@ -85,10 +85,6 @@
                   :path (probe-file (asdf:system-relative-pathname :reblocks-file-uploader "reblocks-file-uploader/reblocks-file-uploader.js"))
                   :type :js)))
 
-(defmethod reblocks/dependencies:get-dependencies ((app file-uploader-server))
-  (append (get-dependencies)
-          (call-next-method)))
-
 (defapp file-uploader-server
   :prefix "/upload/"
   :autostart nil
@@ -96,7 +92,13 @@
              (let ((file-uploader (gethash id *file-uploaders*)))
                (destructuring-bind (bytes-stream file-name mime-type)
                    (reblocks/request:get-parameter id)
+                 (setf (file-uploader-filename file-uploader) file-name
+                       (file-uploader-mime-type file-uploader) mime-type)
                  (alexandria:write-byte-vector-into-file
                   (alexandria:read-stream-content-into-byte-vector bytes-stream)
                   (file-uploader-storage-pathname file-uploader))
                  (lack/response:make-response 200 nil "OK"))))))
+
+(defmethod reblocks/dependencies:get-dependencies ((app file-uploader-server))
+  (append (get-dependencies)
+          (call-next-method)))

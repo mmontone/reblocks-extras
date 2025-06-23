@@ -4,4 +4,4 @@
                 :components
                 ((:file "mupaginator")
                  (:file "reblocks-paginated-list"))))
-  :depends-on (:reblocks))
+  :depends-on (:reblocks :reblocks-lass :cl-who))
