@@ -59,6 +59,6 @@
 
 (defmethod reblocks/dependencies:get-dependencies ((app inline-dependencies))
   (list* (make-instance 'reblocks/dependencies:local-dependency
-                       :type :js
-                       :path (asdf:system-relative-pathname :reblocks-inline-dependencies "inline-dependencies/inline-dependencies.js"))
+                        :type :js
+                        :path (asdf:system-relative-pathname :reblocks-inline-dependencies "inline-dependencies/inline-dependencies.js"))
          (call-next-method)))

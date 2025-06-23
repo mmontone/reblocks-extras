@@ -1,7 +1,15 @@
-(defpackage :reblocks/utils
-  (:use :cl))
+(defpackage :reblocks/extras/utils
+  (:use :cl)
+  (:export #:defwidget*
+           #:make-js-value-action
+           #:test-session-code
+           #:make-js-callback
+           #:make-ps-callback
+           #:let**
+           #:make-js-action*
+           #:css-classes))
 
-(in-package :reblocks/utils)
+(in-package :reblocks/extras/utils)
 
 (defun make-js-value-action (action &optional (js-source "this.value"))
   "Returns JS code which can be inserted into `onchange` attribute and will
