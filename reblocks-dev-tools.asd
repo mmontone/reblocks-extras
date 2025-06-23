@@ -2,5 +2,5 @@
   :author "Mariano Montone <marianomontone@gmail.com>"
   :components ((:module "dev-tools"
                 :components
-                ((:file "reblocks-dev-tools.lisp"))))
+                ((:file "reblocks-dev-tools"))))
   :depends-on (:reblocks))

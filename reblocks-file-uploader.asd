@@ -2,5 +2,5 @@
   :author "Mariano Montone <marianomontone@gmail.com>"
   :components ((:module "file-uploader"
                 :components
-                ((:file "reblocks-file-uploader.lisp"))))
+                ((:file "reblocks-file-uploader"))))
   :depends-on (:reblocks))

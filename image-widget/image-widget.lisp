@@ -1,4 +1,4 @@
-(defpackage :reblocks/image-server
+(defpackage :reblocks/image-widget
   (:use #:cl
         #:reblocks/html)
   (:import-from #:reblocks/widget
@@ -12,7 +12,7 @@
            #:image-url
            #:image-id))
 
-(in-package :reblocks/image-server)
+(in-package :reblocks/image-widget)
 
 (defvar *images* (make-hash-table :test 'equalp))
 (defvar *image-base-url* nil)
