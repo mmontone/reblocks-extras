@@ -2,7 +2,7 @@ var reblocksWidgetSelectionStarted = false;
 var selectionAction;
 
 function inspectWidget(id, widget) {
-    jQuery.get('/inspector/inspect/' + id);
+    jQuery.get('/dev-tools/inspect/' + id);
     console.log('Inspecting: ', widget);
 }
 
@@ -23,7 +23,7 @@ function stopReblocksWidgetSelection() {
 
 function resetReblocksSession() {
     console.log('Resetting Reblocks session');
-    jQuery.get('/inspector/resetsession').always(function () {
+    jQuery.get('/dev-tools/resetsession').always(function () {
         location.reload();
     });
 }
@@ -34,7 +34,7 @@ function startWidgetSelection(action) {
 }
 
 function updateWidget(id, widget) {
-    jQuery.get('/inspector/update/' + id);
+    jQuery.get('/dev-tools/update/' + id);
     console.log('Updating: ', widget);
 }
 

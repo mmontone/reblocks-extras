@@ -1,4 +1,4 @@
-(defpackage :reblocks/inspector
+(defpackage :reblocks/dev-tools
   (:use #:cl)
   (:import-from #:reblocks/app
                 #:defapp)
@@ -12,7 +12,7 @@
            #:get-dependencies
            #:reblocks-inspector))
 
-(in-package :reblocks/inspector)
+(in-package :reblocks/dev-tools)
 
 (defvar *widgets* (make-hash-table :test 'equalp :weakness :value))
 
@@ -28,11 +28,11 @@
 (defun get-dependencies ()
   (list
    (make-instance 'reblocks/dependencies:local-dependency
-                  :path (probe-file (asdf:system-relative-pathname :dbapp "web/reblocks-inspector.js"))
+                  :path (probe-file (asdf:system-relative-pathname :reblocks-dev-tools "dev-tools/reblocks-dev-tools.js"))
                   :type :js)))
 
-(defapp reblocks-inspector
-  :prefix "/inspector/"
+(defapp reblocks-dev-tools
+  :prefix "/dev-tools/"
   :routes ((40ants-routes/defroutes:get ("/inspect/<dom-id>")
              (when-let ((widget (gethash dom-id *widgets*)))
                ;; SWANK:INSPECT-IN-EMACS doesn't work if I don't bind these
