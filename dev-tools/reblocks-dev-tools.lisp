@@ -10,7 +10,7 @@
                 #:update)
   (:export #:clear-inspector-widgets
            #:get-dependencies
-           #:reblocks-inspector))
+           #:reblocks-dev-tools))
 
 (in-package :reblocks/dev-tools)
 

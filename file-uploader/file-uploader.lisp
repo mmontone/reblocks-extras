@@ -82,7 +82,7 @@
 (defun get-dependencies ()
   (list
    (make-instance 'reblocks/dependencies:local-dependency
-                  :path (probe-file (asdf:system-relative-pathname :reblocks-file-uploader "reblocks-file-uploader/reblocks-file-uploader.js"))
+                  :path (probe-file (asdf:system-relative-pathname :reblocks-file-uploader "file-uploader/reblocks-file-uploader.js"))
                   :type :js)))
 
 (defapp file-uploader-server

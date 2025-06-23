@@ -55,8 +55,8 @@ Example:
      ,@body))
 
 (defmacro make-js-action* (&body body)
-  `(make-js-action (lambda (&key &allow-other-keys)
-                     ,@body)))
+  `(reblocks/actions:make-js-action (lambda (&key &allow-other-keys)
+                                      ,@body)))
 
 (defun css-classes (&rest classes)
   (str:join #\space (remove nil classes)))
@@ -104,12 +104,12 @@ List of widget dependencies."
   (flet ((custom-option-p (option)
            (member (car option) (mapcar #'car *defwidget-options-expanders*))))
     (if (not (some #'custom-option-p options))
-        `(defwidget ,name ,direct-superclasses
+        `(reblocks/widget:defwidget ,name ,direct-superclasses
            ,direct-slots
            ,@options)
         (let ((custom-options (remove-if #'custom-option-p options)))
           `(progn
-             (defwidget ,name ,direct-superclasses
+             (reblocks/widget:defwidget ,name ,direct-superclasses
                ,direct-slots
                ,@custom-options)
              ,@(loop for option in options
