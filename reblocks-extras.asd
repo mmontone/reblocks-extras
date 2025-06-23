@@ -1,5 +1,9 @@
 (asdf:defsystem "reblocks-extras"
   :author "Mariano Montone <marianomontone@gmail.com>"
-  :components ((:file "dev-tools/reblocks-dev-tools.lisp")
-               (:file "file-uploader/file-uploader.lisp"))
-  :depends-on (:reblocks :reblocks-lass))
+  :depends-on (:reblocks-dev-tools
+               :reblocks-extras-utils
+               :reblocks-file-uploader
+               :reblocks-forms
+               :reblocks-image-widget
+               :reblocks-inline-dependencies
+               :reblocks-paginated-list))
