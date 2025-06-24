@@ -1,3 +1,23 @@
+;;; reblocks-dev-tools --- Development tools for Reblocks.
+
+;; Copyright (C) 2025 Mariano Montone. All rights reserved.
+
+;; This work is licensed under the terms of the MIT license.
+;; For a copy, see <https://opensource.org/licenses/MIT>.
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; Version: 0.1
+
+;;; Commentary:
+;;
+;; Development tools for Reblocks.
+;;
+;; Usage:
+;;
+;; Add REBLOCKS-DEV-TOOLS application and dependencies via GET-DEPENDENCIES to your application.
+;;
+;;; Code:
+
 (defpackage :reblocks/dev-tools
   (:use #:cl)
   (:import-from #:reblocks/app
