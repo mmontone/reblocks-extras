@@ -12,6 +12,7 @@
   '(("paginated-list/" "reblocks-paginated-list.lisp" :reblocks/paginated-list)
     ("dev-tools/" "reblocks-dev-tools.lisp" :reblocks/dev-tools)
     ("file-uploader/" "reblocks-file-uploader.lisp" :reblocks/file-uploader)
+    ("inline-dependencies/" "reblocks-inline-dependencies.lisp" :reblocks/inline-dependencies)
     ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)))
 
 (defun generate-readmes (&optional (modules-desc *reblocks-modules*))

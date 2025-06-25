@@ -2,5 +2,5 @@
   :author "Mariano Montone <marianomontone@gmail.com>"
   :components ((:module "inline-dependencies"
                 :components
-                ((:file "inline-dependencies"))))
+                ((:file "reblocks-inline-dependencies"))))
   :depends-on (:reblocks))
