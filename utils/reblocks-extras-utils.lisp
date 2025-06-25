@@ -1,3 +1,19 @@
+;;; reblocks-extras-utils --- Utilities for Reblocks web framework.
+
+;; Copyright (C) 2025 Mariano Montone. All rights reserved.
+
+;; This work is licensed under the terms of the MIT license.
+;; For a copy, see <https://opensource.org/licenses/MIT>.
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; Version: 0.1
+
+;;; Commentary:
+;;
+;; Utilities for Reblocks web framework.
+;;
+;;; Code:
+
 (defpackage :reblocks/extras/utils
   (:use :cl)
   (:export #:defwidget*

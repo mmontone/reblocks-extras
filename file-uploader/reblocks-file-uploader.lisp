@@ -1,3 +1,23 @@
+;;; reblocks-file-uploader --- File uploader for Reblocks web framework.
+
+;; Copyright (C) 2025 Mariano Montone. All rights reserved.
+
+;; This work is licensed under the terms of the MIT license.
+;; For a copy, see <https://opensource.org/licenses/MIT>.
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; Version: 0.1
+
+;;; Commentary:
+;;
+;; File uploader for Reblocks web framework.
+;;
+;; Usage:
+;;
+;; TODO
+;;
+;;; Code:
+
 (defpackage :reblocks/file-uploader
   (:use :cl)
   (:import-from #:reblocks/widget

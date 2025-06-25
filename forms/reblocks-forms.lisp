@@ -1,7 +1,19 @@
-;; reblocks-forms - A module for handling web forms in Reblocks, partially inspired by Seaside
+;;; reblocks-forms --- A module for handling web forms in Reblocks, partially inspired by Seaside
+
+;; Copyright (C) 2025 Mariano Montone. All rights reserved.
+
+;; This work is licensed under the terms of the MIT license.
+;; For a copy, see <https://opensource.org/licenses/MIT>.
+
 ;; Author: Mariano Montone <marianomontone@gmail.com>
+;; Version: 0.1
+
+;;; Commentary:
+
 ;; Usage:
+
 ;; Use WITH-FORM to render a web form, and setup CALLBACKs to handle field values on submit.
+
 ;; Example:
 ;;
 ;;     (let ((field-values (list)))
@@ -15,6 +27,9 @@
 ;;         (:input :name (callback (value)
 ;;                             (push (cons "lastname" value) field-values)))
 ;;         (:input :type "submit" :value "Submit")))
+;;
+
+;;; Code:
 
 (defpackage :reblocks/forms
   (:use :cl)

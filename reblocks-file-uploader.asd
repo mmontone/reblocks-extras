@@ -2,5 +2,5 @@
   :author "Mariano Montone <marianomontone@gmail.com>"
   :components ((:module "file-uploader"
                 :components
-                ((:file "file-uploader"))))
+                ((:file "reblocks-file-uploader"))))
   :depends-on (:reblocks :arrows :uuid))

@@ -2,5 +2,5 @@
   :author "Mariano Montone <marianomontone@gmail.com>"
   :components ((:module "utils"
                 :components
-                ((:file "utils"))))
+                ((:file "reblocks-extras-utils"))))
   :depends-on (:reblocks))
