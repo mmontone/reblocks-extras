@@ -30,11 +30,14 @@
                 #:update)
   (:export #:clear-inspector-widgets
            #:get-dependencies
-           #:reblocks-dev-tools))
+           #:reblocks-dev-tools
+           #:*inspected-widget*))
 
 (in-package :reblocks/dev-tools)
 
 (defvar *widgets* (make-hash-table :test 'equalp :weakness :value))
+(defvar *inspected-widget* nil
+  "The widget being inspected.")
 
 ;; we need to start recording widgets when they are created
 (defmethod initialize-instance :after ((widget reblocks/widget:widget) &rest initargs)
@@ -55,6 +58,7 @@
   :prefix "/dev-tools/"
   :routes ((40ants-routes/defroutes:get ("/inspect/<dom-id>")
              (when-let ((widget (gethash dom-id *widgets*)))
+               (setf *inspected-widget* widget)
                ;; SWANK:INSPECT-IN-EMACS doesn't work if I don't bind these
                (let ((swank::*buffer-package* (find-package :cl))
                      (swank::*buffer-readtable* *readtable*))
@@ -68,7 +72,7 @@
              (reblocks/debug:reset-latest-session)
              "Ok")
            (reblocks/routes:page ("/routes" :name "routes"
-                                      :title "Routes")
+                                            :title "Routes")
              (with-html ()
                (:h3 "Routes")
                (:ul
