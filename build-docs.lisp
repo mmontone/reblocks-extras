@@ -14,6 +14,7 @@
     ("file-uploader/" "reblocks-file-uploader.lisp" :reblocks/file-uploader)
     ("image-widget/" "reblocks-image-widget.lisp" :reblocks/image-widget)
     ("inline-dependencies/" "reblocks-inline-dependencies.lisp" :reblocks/inline-dependencies)
+    ("forms/" "reblocks-forms.lisp" :reblocks/forms)
     ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)))
 
 (defun generate-readmes (&optional (modules-desc *reblocks-modules*))
