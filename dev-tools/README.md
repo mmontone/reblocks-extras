@@ -31,5 +31,9 @@ Development tools for Reblocks.
 ```
 
 
+## Variables
+### \*inspected-widget\*
+The widget being inspected.
+
 ## Classes
 ### reblocks-dev-tools

@@ -12,6 +12,7 @@
   '(("paginated-list/" "reblocks-paginated-list.lisp" :reblocks/paginated-list)
     ("dev-tools/" "reblocks-dev-tools.lisp" :reblocks/dev-tools)
     ("file-uploader/" "reblocks-file-uploader.lisp" :reblocks/file-uploader)
+    ("image-widget/" "reblocks-image-widget.lisp" :reblocks/image-widget)
     ("inline-dependencies/" "reblocks-inline-dependencies.lisp" :reblocks/inline-dependencies)
     ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)))
 
@@ -24,3 +25,5 @@
          module
          (merge-pathnames "README.md" (asdf:system-relative-pathname :reblocks-extras directory-name))
          package-name)))))
+
+;; (generate-readmes)
