@@ -12,7 +12,8 @@ Image widget for Reblocks web framework.
 
  Usage:
 
- TODO
+ Create an IMAGE-WIDGET widget, and pass it a pathname to an image in `':path`',
+ then render the widget.
 
 
 

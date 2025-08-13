@@ -1,5 +1,7 @@
 (require :mutils)
 (require :mutils-docs)
+(require :arrows)
+(require :reblocks)
 
 (defpackage :reblocks-extras/docs
   (:use :cl :arrows)
