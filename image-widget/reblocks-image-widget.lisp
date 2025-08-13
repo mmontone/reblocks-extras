@@ -14,7 +14,8 @@
 ;;
 ;; Usage:
 ;;
-;; TODO
+;; Create an IMAGE-WIDGET widget, and pass it a pathname to an image in `':path`',
+;; then render the widget.
 ;;
 ;;; Code:
 
@@ -64,7 +65,10 @@
           :initform nil)
    (height :initarg :height
            :accessor image-height
-           :initform nil)))
+           :initform nil)
+   (css-class :initarg :css-class
+              :accessor css-class
+              :initform nil)))
 
 (defun sha256-file (path)
   "Compute the SHA-256 hash of the file at PATH and return it as a hex string."
@@ -100,7 +104,8 @@
     (:img :src (image-url image)
           :width (image-width image)
           :height (image-height image)
-          :alt (image-alt image))))
+          :alt (image-alt image)
+          :class (css-class image))))
 
 ;; test
 
