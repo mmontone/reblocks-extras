@@ -66,6 +66,9 @@
    (height :initarg :height
            :accessor image-height
            :initform nil)
+   (style :initarg :style
+          :accessor image-style
+          :initform nil)
    (css-class :initarg :css-class
               :accessor css-class
               :initform nil)))
@@ -105,6 +108,7 @@
           :width (image-width image)
           :height (image-height image)
           :alt (image-alt image)
+          :style (image-style image)
           :class (css-class image))))
 
 ;; test
