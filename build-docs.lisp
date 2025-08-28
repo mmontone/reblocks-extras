@@ -18,16 +18,18 @@
     ("inline-dependencies/" "reblocks-inline-dependencies.lisp" :reblocks/inline-dependencies)
     ("forms/" "reblocks-forms.lisp" :reblocks/forms)
     ("browser-history/" "reblocks-browser-history.lisp" :reblocks/browser-history)
+    ("notify/" "reblocks-notify.lisp" :reblocks/notify)
     ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)))
 
 (defun generate-readmes (&optional (modules-desc *reblocks-modules*))
   (dolist (module-desc modules-desc)
     (destructuring-bind (directory-name filename package-name) module-desc
-      (let ((module (mutils:parse-lisp-module-file
-                     (merge-pathnames filename (asdf:system-relative-pathname :reblocks-extras directory-name)))))
-        (mutils-docs:generate-module-docs
-         module
-         (merge-pathnames "README.md" (asdf:system-relative-pathname :reblocks-extras directory-name))
-         package-name)))))
+      (let ((module-file (merge-pathnames filename (asdf:system-relative-pathname :reblocks-extras directory-name))))
+        (load module-file)
+        (let ((module (mutils:parse-lisp-module-file module-file)))
+          (mutils-docs:generate-module-docs
+           module
+           (merge-pathnames "README.md" (asdf:system-relative-pathname :reblocks-extras directory-name))
+           package-name))))))
 
 ;; (generate-readmes)
