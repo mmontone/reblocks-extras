@@ -6,4 +6,6 @@
                :reblocks-forms
                :reblocks-image-widget
                :reblocks-inline-dependencies
-               :reblocks-paginated-list))
+               :reblocks-paginated-list
+               :reblocks-browser-history
+               :reblocks-notify))
