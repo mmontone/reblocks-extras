@@ -39,16 +39,20 @@
                   :path (probe-file (asdf:system-relative-pathname :reblocks-notify "notify/reblocks-notify.js"))
                   :type :js)))
 
-(defun notify (message style &key target options)
+(defun notify (message &optional (style "info") target &rest options)
   "Notify MESSAGE using STYLE.
 
-Example:
+Examples:
 
     (notify \"Hello world\" \"success\")
+    (notify \"Hello world\" \"success\" \"#myElem\")
+    (notify \"Hello world\" \"success\" \"#myElem\" :|position| \"topcenter\")
+    (notify \"Hello world\" \"success\" nil :|position| \"topcenter\")
 
 "
-  (add-command :notify
-               :target target
-               :message message
-               :style style
-               :options options))
+  (let ((notify-options (alexandria:plist-hash-table options)))
+    (setf (gethash :|className| notify-options) style)
+    (add-command :notify
+                 :target (or target :null)
+                 :message message
+                 :options notify-options)))
