@@ -92,8 +92,7 @@
   (setf (image-id image)
         (sha256-file (image-path image)))
   ;; register path in image table to be served later
-  (setf (gethash (image-id image) *images*) (image-path image))
-  )
+  (setf (gethash (image-id image) *images*) (image-path image)))
 
 (defun image-url (image)
   (with-output-to-string (s)
