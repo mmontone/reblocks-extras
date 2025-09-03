@@ -1,3 +1,5 @@
+;; Consider using iframes in order to load specific page assets for each example?
+
 (defpackage :reblocks/examples-browser
   (:use :cl)
   (:import-from #:log)
