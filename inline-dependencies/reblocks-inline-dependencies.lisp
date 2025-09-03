@@ -53,12 +53,14 @@
     (:js
      (with-html ()
        (:script :type "text/javascript"
-                (dependency-source dependency))))
+                (:raw
+                 (dependency-source dependency)))))
     ;; CSS
     (:css
      (with-html ()
        (:style
-        (dependency-source dependency))))))
+        (:raw
+         (dependency-source dependency)))))))
 
 (defmethod reblocks/dependencies:render-in-ajax-response ((dependency inline-dependency))
   (case (reblocks/dependencies:get-type dependency)
