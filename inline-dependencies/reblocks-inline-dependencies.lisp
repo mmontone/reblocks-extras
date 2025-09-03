@@ -22,7 +22,8 @@
   (:import-from #:reblocks/html #:with-html)
   (:export
    #:inline-dependencies
-   #:inline-dependency))
+   #:inline-dependency
+   #:get-dependencies))
 
 (in-package :reblocks/inline-dependencies)
 
@@ -75,8 +76,12 @@
 (defapp inline-dependencies
   :autostart nil)
 
+(defun get-dependencies ()
+  (list
+   (make-instance 'reblocks/dependencies:local-dependency
+                  :type :js
+                  :path (asdf:system-relative-pathname :reblocks-inline-dependencies "inline-dependencies/inline-dependencies.js"))))
+
 (defmethod reblocks/dependencies:get-dependencies ((app inline-dependencies))
-  (list* (make-instance 'reblocks/dependencies:local-dependency
-                        :type :js
-                        :path (asdf:system-relative-pathname :reblocks-inline-dependencies "inline-dependencies/inline-dependencies.js"))
-         (call-next-method)))
+  (append (get-dependencies)
+          (call-next-method)))
