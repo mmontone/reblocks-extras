@@ -29,8 +29,15 @@
                 #:with-html)
   (:import-from #:reblocks/widgets/dom
                 #:dom-id)
+  (:import-from #:trivial-types
+                #:function-designator)
+  (:import-from #:parenscript
+                #:ps #:chain #:lisp #:new #:create)
+  (:import-from #:reblocks/app
+                #:defapp)
   (:export #:get-dependencies
-           #:tom-select))
+           #:tom-select
+           #:tom-select-server))
 
 (in-package :reblocks/tom-select)
 
@@ -43,7 +50,9 @@
                   :path (if bootstrap-5
                             (probe-file (asdf:system-relative-pathname :reblocks-tom-select "tom-select/tom-select.bootstrap5.css"))
                             (probe-file (asdf:system-relative-pathname :reblocks-tom-select "tom-select/tom-select.css")))
-                  :type :css)))
+                  :type :css)
+   (make-instance 'reblocks/dependencies:local-dependency
+                  :path (probe-file (asdf:system-relative-pathname :reblocks-tom-select "tom-select/reblocks-tom-select.js")))))
 
 ;; See: https://tom-select.js.org/docs/
 
@@ -64,7 +73,7 @@ An association list, or a function. If a function, then it is used as server sid
 (defmethod reblocks/widget:get-html-tag ((widget tom-select))
   :select)
 
-(defun register-items-handler (id handler)
+(defun register-options-handler (id handler)
   (when (not (hash-table-p (reblocks/session:get-value :reblocks/tom-select/handlers)))
     (setf (reblocks/session:get-value :reblocks/tom-select/handlers)
           (make-hash-table :test 'equalp)))
@@ -72,27 +81,78 @@ An association list, or a function. If a function, then it is used as server sid
   (let ((handlers-table (reblocks/session:get-value :reblocks/tom-select/handlers)))
     (setf (gethash id handlers-table) handler)))
 
+(defun find-options-handler (id)
+  (gethash id
+           (reblocks/session:get-value :reblocks/tom-select/handlers)))
+
 (defmethod initialize-instance :after ((widget tom-select) &rest initargs)
   (declare (ignore initargs))
-  (with-slots (items) widget
-    (when (typep items 'trivial-types:function-designator)
-      ;; save the widget in the session in order to respond to items requests from client
-      (register-items-handler (dom-id widget) items))))
+  (with-slots (options) widget
+    (when (typep options 'function-designator)
+      ;; save the widget in the session in order to respond to options requests from client
+      (register-options-handler (dom-id widget) options))))
+
+(defun options-handler-url (widget)
+  (quri:render-uri
+   (quri:make-uri :path "/tom-select/options"
+                  :query (list (cons "id" (dom-id widget))))))
 
 (defmethod render ((widget tom-select))
   (with-slots (options items settings) widget
     (with-html ()
       ;; render options html
-      (dolist (option options)
-        (:option :value (car option) (cdr option))))
+      (when (listp options)
+        (dolist (option options)
+          (:option :value (car option) (cdr option)))))
     ;; add javascript
     (reblocks/page-dependencies:push-dependency
      (make-instance 'reblocks/inline-dependencies:inline-dependency
                     :name (format nil "tom-select#~a" (dom-id widget))
                     :type :js
                     :source
-                    (ps:ps
-                      (ps:chain (j-Query document)
+                    (cond
+                      ((typep options 'function-designator)
+                       (ps
+                         (chain (j-Query document)
                                 (ready
                                  (lambda ()
-                                   (ps:new (-Tom-Select (ps:lisp (format nil "#~a" (reblocks/widgets/dom:dom-id widget)))))))))))))
+                                   (new (-Tom-Select
+                                         (lisp (format nil "#~a" (dom-id widget)))
+                                         (create
+                                          :value-field "value"
+                                          :label-field "label"
+                                          :search-field "label"
+                                          :items items
+                                          :load (lambda (query callback)
+                                                  (chain
+                                                   (fetch (+ (lisp (options-handler-url widget)) "&query=" query))
+                                                   (then (lambda (res) (chain res (json))))
+                                                   (then (lambda (json)
+                                                           (callback json)))
+                                                   (catch (lambda ()
+                                                            (callback)))))))))))))
+                      (t
+                       (ps
+                         (chain (j-Query document)
+                                (ready
+                                 (lambda ()
+                                   (new (-Tom-Select
+                                         (lisp (format nil "#~a" (dom-id widget)))
+                                         (create
+                                          :items (lisp items)
+                                          :options (lisp options))))))))))))))
+
+(defapp tom-select-server
+  :prefix "/tom-select/"
+  :autostart nil
+  :routes ((40ants-routes/defroutes:post ("/options" :name "Tom select remote options handler")
+             (let* ((id (reblocks/request:get-parameter "id"))
+                    (query (reblocks/request:get-parameter "query"))
+                    (options-handler
+                      (gethash id
+                               (reblocks/session:get-value :reblocks/tom-select/handlers)))
+                    (options (funcall options-handler query)))
+               (lack/response:make-response
+                200
+                (list (cons "Content-Type" "application/json"))
+                (json:encode-json-to-string options))))))
