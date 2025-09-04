@@ -52,6 +52,7 @@
                             (probe-file (asdf:system-relative-pathname :reblocks-tom-select "tom-select/tom-select.css")))
                   :type :css)
    (make-instance 'reblocks/dependencies:local-dependency
+                  :type :js
                   :path (probe-file (asdf:system-relative-pathname :reblocks-tom-select "tom-select/reblocks-tom-select.js")))))
 
 ;; See: https://tom-select.js.org/docs/
@@ -122,7 +123,7 @@ An association list, or a function. If a function, then it is used as server sid
                                           :value-field "value"
                                           :label-field "label"
                                           :search-field "label"
-                                          :items items
+                                          :items (lisp items)
                                           :load (lambda (query callback)
                                                   (chain
                                                    (fetch (+ (lisp (options-handler-url widget)) "&query=" query))
@@ -140,12 +141,13 @@ An association list, or a function. If a function, then it is used as server sid
                                          (lisp (format nil "#~a" (dom-id widget)))
                                          (create
                                           :items (lisp items)
-                                          :options (lisp options))))))))))))))
+                                          ;;:options (lisp options)
+                                          )))))))))))))
 
 (defapp tom-select-server
   :prefix "/tom-select/"
   :autostart nil
-  :routes ((40ants-routes/defroutes:post ("/options" :name "Tom select remote options handler")
+  :routes ((40ants-routes/defroutes:get ("/options" :name "Tom select remote options handler")
              (let* ((id (reblocks/request:get-parameter "id"))
                     (query (reblocks/request:get-parameter "query"))
                     (options-handler
@@ -156,3 +158,7 @@ An association list, or a function. If a function, then it is used as server sid
                 200
                 (list (cons "Content-Type" "application/json"))
                 (json:encode-json-to-string options))))))
+
+(defmethod reblocks/dependencies:get-dependencies ((app tom-select-server))
+  (append (get-dependencies)
+          (call-next-method)))

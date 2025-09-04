@@ -1,4 +1,3 @@
-(require :reblocks/tom-select)
 (require :peppol)
 
 (defpackage :reblocks/tom-select/test
@@ -13,13 +12,11 @@
 (in-package :reblocks/tom-select/test)
 
 (defapp reblocks-tom-select-test-app
+  :prefix "/"
+  :subclasses (reblocks/tom-select:tom-select-server)
   :autostart t
   :routes ((reblocks/routes:page ("/" :name "Tom-Select test")
              (make-instance 'tom-select-test))))
-
-(defmethod reblocks/dependencies:get-dependencies ((app reblocks-tom-select-test-app))
-  (append (reblocks/tom-select:get-dependencies)
-          (call-next-method)))
 
 (defwidget tom-select-test ()
   ())
