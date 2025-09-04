@@ -120,18 +120,19 @@ An association list, or a function. If a function, then it is used as server sid
                                    (new (-Tom-Select
                                          (lisp (format nil "#~a" (dom-id widget)))
                                          (create
-                                          :value-field "value"
-                                          :label-field "label"
-                                          :search-field "label"
-                                          :items (lisp items)
-                                          :load (lambda (query callback)
-                                                  (chain
-                                                   (fetch (+ (lisp (options-handler-url widget)) "&query=" query))
-                                                   (then (lambda (res) (chain res (json))))
-                                                   (then (lambda (json)
-                                                           (callback json)))
-                                                   (catch (lambda ()
-                                                            (callback)))))))))))))
+                                          value-field "value"
+                                          label-field "label"
+                                          search-field "label"
+                                          items (lisp items)
+                                          load (lambda (query callback)
+                                                 (chain
+                                                  (fetch (+ (lisp (options-handler-url widget)) "&query=" query))
+                                                  (then (lambda (res) (chain res (json))))
+                                                  (then (lambda (json)
+                                                          (chain console (log json))
+                                                          (callback json)))
+                                                  (catch (lambda ()
+                                                           (callback)))))))))))))
                       (t
                        (ps
                          (chain (j-Query document)
@@ -156,7 +157,7 @@ An association list, or a function. If a function, then it is used as server sid
                     (options (funcall options-handler query)))
                (lack/response:make-response
                 200
-                (list (cons "Content-Type" "application/json"))
+                (list :content-type "application/json")
                 (json:encode-json-to-string options))))))
 
 (defmethod reblocks/dependencies:get-dependencies ((app tom-select-server))

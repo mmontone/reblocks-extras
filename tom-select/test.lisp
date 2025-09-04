@@ -25,13 +25,17 @@
   (cons (cdr cons) (car cons)))
 
 (defun match-countries (entered)
-  (mapcar #'swap-cons
+  (mapcar (lambda (country)
+            (destructuring-bind (country-name . country-code) country
+              (list (cons "label" country-name)
+                    (cons "value" country-code))))
           (remove-if-not (lambda (country-name)
                            (str:containsp entered country-name :ignore-case t))
                          peppol/code-lists:|ISO 3166-1:Alpha2 Country codes|
                          :key #'car)))
 
 ;; (match-countries "Ar")
+;; (json:encode-json-to-string (match-countries "Ar"))
 
 (defmethod render ((widget tom-select-test))
   (with-html ()
@@ -43,6 +47,7 @@
 
 (defun start (&key (port 9091))
   (reblocks/server:start :port port
-                         :apps '(reblocks-tom-select-test-app)))
+                         :apps '(reblocks-tom-select-test-app
+                                 tom-select-server)))
 
 ;; (start)
