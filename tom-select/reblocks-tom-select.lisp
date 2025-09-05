@@ -99,7 +99,7 @@ An association list, or a function. If a function, then it is used as server sid
    (quri:make-uri :path "/tom-select/options"
                   :query (list (cons "id" id)))))
 
-(defun use-tom-select (id-or-widget options settings &key items)
+(defun use-tom-select (id-or-widget options &optional settings &key items)
   "Use tom-select for ID-OR-WIDGET."
   ;; FIXME: process settings
   (let ((id (etypecase id-or-widget
