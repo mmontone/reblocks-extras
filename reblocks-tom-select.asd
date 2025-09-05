@@ -3,8 +3,9 @@
   :components ((:module "tom-select"
                 :components
                 ((:file "reblocks-tom-select"))))
-  :depends-on (:reblocks
-               :reblocks-inline-dependencies
-               :trivial-types
-               :cl-json
-               :parenscript))
+  :depends-on (#:reblocks
+               #:reblocks-inline-dependencies
+               #:trivial-types
+               #:cl-json
+               #:parenscript
+               #:assoc-utils))

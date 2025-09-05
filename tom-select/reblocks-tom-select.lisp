@@ -35,6 +35,8 @@
                 #:ps #:chain #:lisp #:new #:create)
   (:import-from #:reblocks/app
                 #:defapp)
+  (:import-from #:assoc-utils
+                #:alistp)
   (:export #:get-dependencies
            #:tom-select
            #:tom-select-server
@@ -87,13 +89,6 @@ An association list, or a function. If a function, then it is used as server sid
   (gethash id
            (reblocks/session:get-value :reblocks/tom-select/handlers)))
 
-(defmethod initialize-instance :after ((widget tom-select) &rest initargs)
-  (declare (ignore initargs))
-  (with-slots (options) widget
-    (when (typep options 'function-designator)
-      ;; save the widget in the session in order to respond to options requests from client
-      (register-options-handler (dom-id widget) options))))
-
 (defun options-handler-url (id)
   (quri:render-uri
    (quri:make-uri :path "/tom-select/options"
@@ -106,6 +101,8 @@ An association list, or a function. If a function, then it is used as server sid
               (string id-or-widget)
               (reblocks/widget:widget
                (dom-id id-or-widget)))))
+    (when (typep options 'function-designator)
+      (register-options-handler id options))
     (reblocks/page-dependencies:push-dependency
      (make-instance 'reblocks/inline-dependencies:inline-dependency
                     :name (format nil "tom-select#~a" id)
@@ -134,7 +131,7 @@ An association list, or a function. If a function, then it is used as server sid
                                                           (callback json)))
                                                   (catch (lambda ()
                                                            (callback)))))))))))))
-                      ;; options are a list, assume they were renderer in the html
+                      ;; options are a list, assume they were rendered in the html
                       ((listp options)
                        (ps
                          (chain (j-Query document)
@@ -148,6 +145,7 @@ An association list, or a function. If a function, then it is used as server sid
 
 (defmethod render ((widget tom-select))
   (with-slots (options items settings) widget
+
     (with-html ()
       ;; render options html
       (when (listp options)
@@ -155,6 +153,17 @@ An association list, or a function. If a function, then it is used as server sid
           (:option :value (car option) (cdr option)))))
 
     (use-tom-select widget options settings :items items)))
+
+(defun encode-options-to-json (options)
+  (let ((json-options options))
+    (when (alistp json-options)
+      (setf json-options
+            (mapcar (lambda (option)
+                      (list
+                       (cons "value" (car option))
+                       (cons "label" (cdr option))))
+                    options)))
+    (json:encode-json-to-string json-options)))
 
 (defapp tom-select-server
   :prefix "/tom-select/"
@@ -169,7 +178,7 @@ An association list, or a function. If a function, then it is used as server sid
                (lack/response:make-response
                 200
                 (list :content-type "application/json")
-                (json:encode-json-to-string options))))))
+                (encode-options-to-json options))))))
 
 (defmethod reblocks/dependencies:get-dependencies ((app tom-select-server))
   (append (get-dependencies)
