@@ -37,7 +37,8 @@
                 #:defapp)
   (:export #:get-dependencies
            #:tom-select
-           #:tom-select-server))
+           #:tom-select-server
+           #:use-tom-select))
 
 (in-package :reblocks/tom-select)
 
@@ -93,10 +94,57 @@ An association list, or a function. If a function, then it is used as server sid
       ;; save the widget in the session in order to respond to options requests from client
       (register-options-handler (dom-id widget) options))))
 
-(defun options-handler-url (widget)
+(defun options-handler-url (id)
   (quri:render-uri
    (quri:make-uri :path "/tom-select/options"
-                  :query (list (cons "id" (dom-id widget))))))
+                  :query (list (cons "id" id)))))
+
+(defun use-tom-select (id-or-widget options settings &key items)
+  "Use tom-select for ID-OR-WIDGET."
+  ;; FIXME: process settings
+  (let ((id (etypecase id-or-widget
+              (string id-or-widget)
+              (reblocks/widget:widget
+               (dom-id id-or-widget)))))
+    (reblocks/page-dependencies:push-dependency
+     (make-instance 'reblocks/inline-dependencies:inline-dependency
+                    :name (format nil "tom-select#~a" id)
+                    :type :js
+                    :source
+                    (cond
+                      ;; if options are a function, fetch options remotely
+                      ((typep options 'function-designator)
+                       (ps
+                         (chain (j-Query document)
+                                (ready
+                                 (lambda ()
+                                   (new (-Tom-Select
+                                         (lisp (format nil "#~a" id))
+                                         (create
+                                          value-field "value"
+                                          label-field "label"
+                                          search-field "label"
+                                          items (lisp items)
+                                          load (lambda (query callback)
+                                                 (chain
+                                                  (fetch (+ (lisp (options-handler-url id)) "&query=" query))
+                                                  (then (lambda (res) (chain res (json))))
+                                                  (then (lambda (json)
+                                                          (chain console (log json))
+                                                          (callback json)))
+                                                  (catch (lambda ()
+                                                           (callback)))))))))))))
+                      ;; options are a list, assume they were renderer in the html
+                      ((listp options)
+                       (ps
+                         (chain (j-Query document)
+                                (ready
+                                 (lambda ()
+                                   (new (-Tom-Select
+                                         (lisp (format nil "#~a" id))
+                                         (create
+                                          :items (lisp items)
+                                          )))))))))))))
 
 (defmethod render ((widget tom-select))
   (with-slots (options items settings) widget
@@ -105,45 +153,8 @@ An association list, or a function. If a function, then it is used as server sid
       (when (listp options)
         (dolist (option options)
           (:option :value (car option) (cdr option)))))
-    ;; add javascript
-    (reblocks/page-dependencies:push-dependency
-     (make-instance 'reblocks/inline-dependencies:inline-dependency
-                    :name (format nil "tom-select#~a" (dom-id widget))
-                    :type :js
-                    :source
-                    (cond
-                      ((typep options 'function-designator)
-                       (ps
-                         (chain (j-Query document)
-                                (ready
-                                 (lambda ()
-                                   (new (-Tom-Select
-                                         (lisp (format nil "#~a" (dom-id widget)))
-                                         (create
-                                          value-field "value"
-                                          label-field "label"
-                                          search-field "label"
-                                          items (lisp items)
-                                          load (lambda (query callback)
-                                                 (chain
-                                                  (fetch (+ (lisp (options-handler-url widget)) "&query=" query))
-                                                  (then (lambda (res) (chain res (json))))
-                                                  (then (lambda (json)
-                                                          (chain console (log json))
-                                                          (callback json)))
-                                                  (catch (lambda ()
-                                                           (callback)))))))))))))
-                      (t
-                       (ps
-                         (chain (j-Query document)
-                                (ready
-                                 (lambda ()
-                                   (new (-Tom-Select
-                                         (lisp (format nil "#~a" (dom-id widget)))
-                                         (create
-                                          :items (lisp items)
-                                          ;;:options (lisp options)
-                                          )))))))))))))
+
+    (use-tom-select widget options settings :items items)))
 
 (defapp tom-select-server
   :prefix "/tom-select/"
