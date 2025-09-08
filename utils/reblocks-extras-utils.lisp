@@ -75,7 +75,7 @@ Example:
                                       ,@body)))
 
 (defun css-classes (&rest classes)
-  (str:join #\space (remove nil classes)))
+  (str:join #\space (remove nil (alexandria:flatten classes))))
 
 
 (defparameter *defwidget-options-expanders*
