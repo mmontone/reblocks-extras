@@ -121,7 +121,7 @@ An association list, or a function. If a function, then it is used as server sid
                                           value-field "value"
                                           label-field "label"
                                           search-field "label"
-                                          items (lisp items)
+                                          ;;items (lisp items)
                                           load (lambda (query callback)
                                                  (chain
                                                   (fetch (+ (lisp (options-handler-url id)) "&query=" query))
@@ -140,7 +140,7 @@ An association list, or a function. If a function, then it is used as server sid
                                    (new (-Tom-Select
                                          (lisp (format nil "#~a" id))
                                          (create
-                                          :items (lisp items)
+                                          ;;:items (lisp items)
                                           )))))))))))))
 
 (defmethod render ((widget tom-select))
