@@ -66,10 +66,12 @@
                  "Ok")))
            (40ants-routes/defroutes:get ("/update/<dom-id>")
              (when-let ((widget (gethash dom-id *widgets*)))
+               (log:info "Widget updated from UI: ~A" widget)
                (update widget))
              "Ok")
            (40ants-routes/defroutes:get ("/resetsession")
              (reblocks/debug:reset-latest-session)
+             (log:info "Session reset")
              "Ok")
            (reblocks/routes:page ("/routes" :name "routes"
                                             :title "Routes")
