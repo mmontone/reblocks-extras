@@ -13,6 +13,8 @@ function reblocksRemoveClass(params) {
     target.toggleClass(params.cssClass);
 }
 
-window.commandHandlers['addClass'] = reblocksAddClass;
-window.commandHandlers['removeClass'] = reblocksRemoveClass;
-window.commandHandlers['toggleClass'] = reblocksToggleClass;
+jQuery(function () {
+    window.commandHandlers['addClass'] = reblocksAddClass;
+    window.commandHandlers['removeClass'] = reblocksRemoveClass;
+    window.commandHandlers['toggleClass'] = reblocksToggleClass;
+});
