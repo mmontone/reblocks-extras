@@ -13,4 +13,6 @@ function reblocksNotify(params) {
     }
 }
 
-window.commandHandlers['notify'] = reblocksNotify;
+jQuery(function () {
+    window.commandHandlers['notify'] = reblocksNotify;
+});
