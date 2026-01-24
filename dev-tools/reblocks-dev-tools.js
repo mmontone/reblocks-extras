@@ -43,6 +43,13 @@ function toggleReblocksDebug() {
     jQuery.get('/dev-tools/toggledebug');
 }
 
+function showReblocksInfo() {
+    jQuery.get('/dev-tools/info',
+               function (info) {
+                   alert(info);
+               });
+}
+
 jQuery(function () {
 
     // Add an inspect button
@@ -60,10 +67,14 @@ jQuery(function () {
     let toggleDebugButton = jQuery('<button type="button" title="Toggle debug">⛭</button>');
     toggleDebugButton.click(toggleReblocksDebug);
 
+    let infoButton = jQuery('<button type="button" title="Show Reblocks Info">🛈</button>');
+    infoButton.click(showReblocksInfo);
+
     tools.append(inspectButton);
     tools.append(updateWidgetButton);
     tools.append(resetSessionButton);
     tools.append(toggleDebugButton);
+    tools.append(infoButton);
 
     jQuery('body').append(tools);
 

@@ -79,8 +79,20 @@
                  (reblocks/debug:on))
              (log:info "Reblocks debug status: ~A" (reblocks/debug:status))
              "Ok")
-           (reblocks/routes:page ("/routes" :name "routes"
-                                            :title "Routes")
+           (40ants-routes/defroutes:get ("/info")
+             (reblocks/response:add-header :content-type "text/plain")
+             (reblocks/response:make-response
+              (with-output-to-string (*standard-output*)
+                (format t "Reblocks INFO~%")
+                (format t "-------------~%~%")
+                (format t "Servers: ")
+                (princ (reblocks/server:servers))
+                (terpri) (terpri)
+                (format t "Debug: ~a~%~%" (reblocks/debug:status))
+                (format t "Logging: ~%")
+                (log:config))
+              :content-type "text/plain"))
+           (reblocks/routes:page ("/routes" :name "routes" :title "Routes")
              (with-html ()
                (:h3 "Routes")
                (:ul
