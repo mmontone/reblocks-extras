@@ -77,6 +77,7 @@
              (if (reblocks/debug:status)
                  (reblocks/debug:off)
                  (reblocks/debug:on))
+             (log:info "Reblocks debug status: ~A" (reblocks/debug:status))
              "Ok")
            (reblocks/routes:page ("/routes" :name "routes"
                                             :title "Routes")
