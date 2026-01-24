@@ -13,8 +13,25 @@ function reblocksRemoveClass(params) {
     target.toggleClass(params.cssClass);
 }
 
+function reblocksPrompt(params) {
+    const res = window.prompt(params.message);
+    if (res == null || res == undefined) return;
+    initiateActionWithArgs(params.actionCode, null, {
+        'response': res
+    });
+}
+
+function reblocksConfirm(params) {
+    const res = window.confirm(params.message);
+    initiateActionWithArgs(params.actionCode, null, {
+        'response': res
+    });
+}
+
 jQuery(function () {
     window.commandHandlers['addClass'] = reblocksAddClass;
     window.commandHandlers['removeClass'] = reblocksRemoveClass;
     window.commandHandlers['toggleClass'] = reblocksToggleClass;
+    window.commandHandlers['prompt'] = reblocksPrompt;
+    window.commandHandlers['confirm'] = reblocksConfirm;
 });

@@ -18,7 +18,11 @@
   (:use :cl)
   (:export #:add-css-class
            #:remove-css-class
-           #:toggle-css-class))
+           #:toggle-css-class
+           #:prompt
+           #:confirm
+           #:inline-prompt
+           #:inline-confirm))
 
 (in-package :reblocks/extras/commands)
 
@@ -45,3 +49,25 @@
    :toggle-class
    :dom-id (reblocks/widgets/dom:dom-id widget)
    :css-class css-class))
+
+(defun inline-prompt (message action)
+  (let ((action-code (reblocks/actions:make-action action)))
+    (format nil "reblocksPrompt({message:'~a', actionCode: '~a'); return false;"
+            message action-code)))
+
+(defun inline-confirm (message action)
+  (let ((action-code (reblocks/actions:make-action action)))
+    (format nil "reblocksConfirm({message:'~a', actionCode: '~a'}); return false;"
+            message action-code)))
+
+(defun prompt (message action)
+  (reblocks/commands:add-command
+   :prompt
+   :message message
+   :action-code (reblocks/actions:make-action action)))
+
+(defun confirm (message action)
+  (reblocks/commands:add-command
+   :confirm
+   :message message
+   :action-code (reblocks/actions:make-action action)))
