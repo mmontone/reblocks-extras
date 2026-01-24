@@ -73,6 +73,11 @@
              (reblocks/debug:reset-latest-session)
              (log:info "Session reset")
              "Ok")
+           (40ants-routes/defroutes:get ("/toggledebug")
+             (if (reblocks/debug:status)
+                 (reblocks/debug:off)
+                 (reblocks/debug:on))
+             "Ok")
            (reblocks/routes:page ("/routes" :name "routes"
                                             :title "Routes")
              (with-html ()

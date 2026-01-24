@@ -38,6 +38,11 @@ function updateWidget(id, widget) {
     console.log('Updating: ', widget);
 }
 
+function toggleReblocksDebug() {
+    console.log('Toggling Reblocks debug');
+    jQuery.get('/dev-tools/toggledebug');
+}
+
 jQuery(function () {
 
     // Add an inspect button
@@ -52,9 +57,13 @@ jQuery(function () {
     let resetSessionButton = jQuery('<button type="button" title="Reset session">🔁</button>');
     resetSessionButton.click(resetReblocksSession);
 
+    let toggleDebugButton = jQuery('<button type="button" title="Toggle debug">⛭</button>');
+    toggleDebugButton.click(toggleReblocksDebug);
+
     tools.append(inspectButton);
     tools.append(updateWidgetButton);
     tools.append(resetSessionButton);
+    tools.append(toggleDebugButton);
 
     jQuery('body').append(tools);
 
