@@ -21,8 +21,10 @@
            #:toggle-css-class
            #:prompt
            #:confirm
+           #:alert
            #:inline-prompt
-           #:inline-confirm))
+           #:inline-confirm
+           #:inline-alert))
 
 (in-package :reblocks/extras/commands)
 
@@ -60,6 +62,11 @@
     (format nil "reblocksConfirm({message:'~a', actionCode: '~a'}); return false;"
             message action-code)))
 
+(defun inline-alert (message action)
+  (let ((action-code (reblocks/actions:make-action action)))
+    (format nil "reblocksAlert({message:'~a', actionCode: '~a'}); return false;"
+            message action-code)))
+
 (defun prompt (message action)
   (reblocks/commands:add-command
    :prompt
@@ -69,5 +76,11 @@
 (defun confirm (message action)
   (reblocks/commands:add-command
    :confirm
+   :message message
+   :action-code (reblocks/actions:make-action action)))
+
+(defun alert (message action)
+  (reblocks/commands:add-command
+   :alert
    :message message
    :action-code (reblocks/actions:make-action action)))

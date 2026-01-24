@@ -28,10 +28,18 @@ function reblocksConfirm(params) {
     });
 }
 
+function reblocksAlert(params) {
+    const res = window.alert(params.message);
+    initiateActionWithArgs(params.actionCode, null, {
+        'response': res
+    });
+}
+
 jQuery(function () {
     window.commandHandlers['addClass'] = reblocksAddClass;
     window.commandHandlers['removeClass'] = reblocksRemoveClass;
     window.commandHandlers['toggleClass'] = reblocksToggleClass;
     window.commandHandlers['prompt'] = reblocksPrompt;
     window.commandHandlers['confirm'] = reblocksConfirm;
+    window.commandHandlers['alert'] = reblocksAlert;
 });
