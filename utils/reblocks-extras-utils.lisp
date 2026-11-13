@@ -80,26 +80,36 @@ Example:
 
 (defparameter *defwidget-options-expanders*
   `((:render . ,(lambda (renderer name)
-                  (destructuring-bind ((arg) &body body) (cdr renderer)
+                  (destructuring-bind ((arg) &body body) renderer
                     `(defmethod reblocks/widget:render ((,arg ,name))
                        ,@body))))
     (:css-classes . ,(lambda (css-classes-spec name)
-                       (destructuring-bind (css-classes &key (inherit t)) (cdr css-classes-spec)
+                       (destructuring-bind (css-classes &key (inherit t)) css-classes-spec
                          `(defmethod reblocks/widget:get-css-classes ((widget ,name))
                             (declare (ignore widget))
                             ,(if inherit
                                  `(append ',css-classes (call-next-method))
                                  `',css-classes)))))
+    (:css-classes-method . ,(lambda (css-classes-method name)
+                              (destructuring-bind ((widget) &body body) css-classes-method
+                                `(defmethod reblocks/widget:get-css-classes ((,widget ,name))
+                                   ,@body))))
     (:html-tag . ,(lambda (html-tag name)
-                    `(defmethod reblocks/widget:get-html-tag ((widget ,name))
-                       (declare (ignore widget))
-                       ,(cadr html-tag))))
+                    (if (> (length html-tag) 1)
+                        ;; method form ((widget) &body body)
+                        (destructuring-bind ((widget) &body body) html-tag
+                          `(defmethod reblocks/widget:get-html-tag ((,widget ,name))
+                             ,@body))
+                        ;; otherwise, direct tag specification
+                        `(defmethod reblocks/widget:get-html-tag ((widget ,name))
+                           (declare (ignore widget))
+                           ',(car html-tag)))))
     (:dependencies . ,(lambda (dependencies name)
                         `(defmethod reblocks/dependencies:get-dependencies ((widget ,name))
                            (list* ,@(mapcar (lambda (dependency-spec)
                                               (destructuring-bind (dependency-class &rest args) dependency-spec
                                                 `(make-instance ',dependency-class ,@args)))
-                                            (cdr dependencies))
+                                            dependencies)
                                   (call-next-method)))))))
 
 (defmacro defwidget* (name direct-superclasses direct-slots &rest options)
@@ -109,11 +119,17 @@ Options:
 (:render (widget) &body body)
 Specify the widget render method, inline.
 
-(:html-tag <html-tag-keyword>)
+(:html-tag html-tag)
 HTML tag to use by the widget, via REBLOCKS/WIDGET:GET-HTML-TAG .
+
+(:html-tag (widget) &body body)
+HTML tag method. Should return an HTML tag, or (html-tag . attributes) for the widget.
 
 (:css-classes css-classes-list &key (inherit t))
 CSS classes for the widget, via REBLOCKS/WIDGET:GET-CSS-CLASSES .
+
+(:css-classes-method (widget) &body body)
+CSS classes method. Should return a list of CSS classes for the widget.
 
 (:dependencies &rest (dependency-class &rest initargs))
 List of widget dependencies."
@@ -131,4 +147,54 @@ List of widget dependencies."
              ,@(loop for option in options
                      when (custom-option-p option)
                        collect (let ((expander (cdr (assoc (car option) *defwidget-options-expanders*))))
-                                 (funcall expander option name))))))))
+                                 (funcall expander (cdr option) name))))))))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:html-tag :ul)))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:html-tag (wdg) :ul)))
+
+;; html-tag can return html-tag plus attributes
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:html-tag (:input . (:type "number")))))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:html-tag (wdg) (cons :input (list :type (input-type wdg))))))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:css-classes ("foo" "bar"))))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:css-classes ("foo" "bar") :inherit nil)))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:css-classes-method (wdg)
+    (list "foo" "bar" (class-of-widget wdg)))))
+
+#+example
+(macroexpand
+ '(defwidget* my-widget ()
+   ()
+   (:dependencies (dependency2 :config "value"))))
