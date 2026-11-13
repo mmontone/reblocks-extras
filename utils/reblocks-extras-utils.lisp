@@ -106,8 +106,8 @@ Example:
   "Widget definition macro on top of REBLOCKS/WIDGET:DEFWIDGET that supports extra options.
 
 Options:
-(:renderer (widget) &body body)
-Specify the widget renderer method, inline.
+(:render (widget) &body body)
+Specify the widget render method, inline.
 
 (:html-tag <html-tag-keyword>)
 HTML tag to use by the widget, via REBLOCKS/WIDGET:GET-HTML-TAG .
