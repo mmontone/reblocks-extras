@@ -12,6 +12,8 @@
 ;;
 ;; Extra commands for Reblocks framework.
 ;;
+;; Usage: add to application dependencies via GET-DEPENDENCIES function.
+;;
 ;;; Code:
 
 (defpackage :reblocks/extras/commands
@@ -24,7 +26,8 @@
            #:alert
            #:inline-prompt
            #:inline-confirm
-           #:inline-alert))
+           #:inline-alert
+           #:get-dependencies))
 
 (in-package :reblocks/extras/commands)
 
@@ -34,23 +37,26 @@
                   :path (probe-file (asdf:system-relative-pathname :reblocks-extras-commands "commands/reblocks-extras-commands.js"))
                   :type :js)))
 
-(defun add-css-class (widget css-class)
+(defun add-css-class (widget css-class &optional path)
   (reblocks/commands:add-command
    :add-class
    :dom-id (reblocks/widgets/dom:dom-id widget)
-   :css-class css-class))
+   :css-class css-class
+   :path path))
 
-(defun remove-css-class (widget css-class)
+(defun remove-css-class (widget css-class &optional path)
   (reblocks/commands:add-command
    :remove-class
    :dom-id (reblocks/widgets/dom:dom-id widget)
-   :css-class css-class))
+   :css-class css-class
+   :path path))
 
-(defun toggle-css-class (widget css-class)
+(defun toggle-css-class (widget css-class &optional path)
   (reblocks/commands:add-command
    :toggle-class
    :dom-id (reblocks/widgets/dom:dom-id widget)
-   :css-class css-class))
+   :css-class css-class
+   :path path))
 
 (defun inline-prompt (message action)
   (let ((action-code (reblocks/actions:make-action action)))

@@ -1,15 +1,24 @@
 function reblocksAddClass(params) {
     var target = jQuery('#' + params.domId);
+    if (params.path) {
+        target = target.find(params.path);
+    }
     target.addClass(params.cssClass);
 }
 
 function reblocksRemoveClass(params) {
     var target = jQuery('#' + params.domId);
+    if (params.path) {
+        target = target.find(params.path);
+    }
     target.removeClass(params.cssClass);
 }
 
-function reblocksRemoveClass(params) {
+function reblocksToggleClass(params) {
     var target = jQuery('#' + params.domId);
+    if (params.path) {
+        target = target.find(params.path);
+    }
     target.toggleClass(params.cssClass);
 }
 
