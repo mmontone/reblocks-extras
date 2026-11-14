@@ -1,6 +1,6 @@
 function reblocksAddClass(params) {
     var target = jQuery('#' + params.domId);
-    if (params.path) {
+    if (typeof params.path === 'string') {
         target = target.find(params.path);
     }
     target.addClass(params.cssClass);
@@ -8,7 +8,7 @@ function reblocksAddClass(params) {
 
 function reblocksRemoveClass(params) {
     var target = jQuery('#' + params.domId);
-    if (params.path) {
+    if (typeof params.path === 'string') {
         target = target.find(params.path);
     }
     target.removeClass(params.cssClass);
@@ -16,7 +16,7 @@ function reblocksRemoveClass(params) {
 
 function reblocksToggleClass(params) {
     var target = jQuery('#' + params.domId);
-    if (params.path) {
+    if (typeof params.path === 'string') {
         target = target.find(params.path);
     }
     target.toggleClass(params.cssClass);
@@ -25,22 +25,28 @@ function reblocksToggleClass(params) {
 function reblocksPrompt(params) {
     const res = window.prompt(params.message);
     if (res == null || res == undefined) return;
-    initiateActionWithArgs(params.actionCode, null, {
-        'response': res
+    initiateAction(params.actionCode, {
+        args: {
+            'response': res
+        }
     });
 }
 
 function reblocksConfirm(params) {
     const res = window.confirm(params.message);
-    initiateActionWithArgs(params.actionCode, null, {
-        'response': res
+    initiateAction(params.actionCode, {
+        args: {
+            'response': res
+        }
     });
 }
 
 function reblocksAlert(params) {
     const res = window.alert(params.message);
-    initiateActionWithArgs(params.actionCode, null, {
-        'response': res
+    initiateAction(params.actionCode, {
+        args: {
+            'response': res
+        }
     });
 }
 
