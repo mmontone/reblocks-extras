@@ -21,6 +21,7 @@
   (:export #:add-css-class
            #:remove-css-class
            #:toggle-css-class
+           #:set-attribute
            #:prompt
            #:confirm
            #:alert
@@ -63,6 +64,16 @@ If PATH is present, then use jQuery.find method to stablish the target element f
    :toggle-class
    :dom-id (reblocks/widgets/dom:dom-id widget)
    :css-class css-class
+   :path path))
+
+(defun set-attribute (widget attribute value &optional path)
+  "Set ATTRIBUTE of WIDGET to VALUE.
+If PATH is present, then use jQuery.find method to stablish the target element first."
+  (reblocks/commands:add-command
+   :set-attribute
+   :dom-id (reblocks/widgets/dom:dom-id widget)
+   :attribute attribute
+   :value value
    :path path))
 
 (defun inline-prompt (message action)
