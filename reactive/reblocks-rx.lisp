@@ -218,15 +218,17 @@
   ()
   (:documentation "Widget renderer using sgml-composer"))
 
+(defgeneric render-sgml (widget))
+
 (defvar *sgml-output* nil)
 
-(defmethod render :around ((widget sgml-widget))
+(defmethod render ((widget sgml-widget))
   ;; capture html output
   ;; if sgml output is already bound, create an sgml raw element with the html
   ;; otherwise, output the sgml to the html output
   (let (sgml)
     (let ((*sgml-output* t))
-      (setf sgml (call-next-method)))
+      (setf sgml (render-sgml widget)))
     (check-type sgml sgml-composer:element)
     (if *sgml-output*
         ;; the sgml output is already bound, create an sgml raw element with the html
@@ -238,14 +240,24 @@
 (defwidget sgml-test-1 (sgml-widget)
   ())
 
-(defmethod render ((widget sgml-test-1))
-  ;;(break "hello")
+(defmethod render-sgml ((widget sgml-test-1))
   (sgml-composer:sgml
     (:div (:foo "foo")
           "Hello world")))
 
 (with-output-to-string (reblocks/html:*stream*)
   (render (make-instance 'sgml-test-1)))
+
+(defwidget sgml-test-2 (sgml-widget)
+  ())
+
+(defmethod render-sgml ((widget sgml-test-2))
+  (sgml-composer:sgml
+    (:div (:class "test2")
+          (render-sgml (make-instance 'sgml-test-1)))))
+
+(with-output-to-string (reblocks/html:*stream*)
+  (render (make-instance 'sgml-test-2)))
 
 (defmethod spinneret:html ((element sgml-composer:element))
   (sgml-composer:write-sgml element :destination spinneret:*html*))
@@ -260,3 +272,5 @@
 
 (spinneret:with-html
   (:div (sgml-test-1)))
+
+
