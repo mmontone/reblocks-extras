@@ -39,15 +39,17 @@
   ((dependents :accessor dependents
                :initform nil)))
 
+(defun emit (rxval &rest args)
+  (dolist (dependent (dependents rxval))
+    ;;(let ((dependent (trivial-garbage:weak-pointer-value dependent)))
+    (when dependent
+      (apply dependent args))))
+
 (defclass rxvalue (rxobject)
   ((value :initarg :value :accessor @)))
 
 (defmethod (setf @) :after (value (rxval rxvalue))
-  (dolist (dependent (dependents rxval))
-    ;;(let ((dependent (trivial-garbage:weak-pointer-value dependent)))
-    (when dependent
-      (funcall dependent value))
-    ))
+  (emit rxval :changed value))
 
 (defmethod print-object ((rxval rxvalue) stream)
   (format stream "@~s" (@ rxval)))
@@ -69,12 +71,6 @@
 (defclass rxlist (rxvalue)
   ()
   (:documentation "A reactive list. Signals different events when element is added, inserted, removed."))
-
-(defun emit (rxval &rest args)
-  (dolist (dependent (dependents rxval))
-    ;;(let ((dependent (trivial-garbage:weak-pointer-value dependent)))
-    (when dependent
-      (apply dependent args))))
 
 (defun add (elem rxlist)
   (push elem (@ rxlist))
@@ -175,6 +171,7 @@
         ((eql (first form) 'dolist))
         ((eql (first form) 'if))
         ((eql (first form) 'when))
+        ((eql (first form) 'unless))
         ((keywordp (first form))
          (destructuring-bind (tag attrs &body children) form
            ;; inspect attributes. extract references to rxvar values.
@@ -191,7 +188,7 @@
                                   ,(cond
                                      ((= (length children) 0) "")
                                      ((= (length children) 1)
-                                      (transform-sgml-forms (car children)))
+                                      `(list ,(transform-sgml-forms (car children))))
                                      ((> (length children) 1)
                                       `(list ,@(mapcar #'transform-sgml-forms children))))
                                   :attrs-rxvars (list
@@ -214,4 +211,38 @@
 
 (eval (transform-sgml-forms '(:div (:foo "bar"))))
 
-(eval (transform-sgml-forms '(:div (:foo (@ foo)))))
+(eval (transform-sgml-forms '(:div (:foo (+ (@ foo) (@ bar)))
+                              (:span () "Hello"))))
+
+(defwidget sgml-widget ()
+  ()
+  (:documentation "Widget renderer using sgml-composer"))
+
+(defvar *sgml-output* nil)
+
+(defmethod render :around ((widget sgml-widget))
+  ;; capture html output
+  ;; if sgml output is already bound, create an sgml raw element with the html
+  ;; otherwise, output the sgml to the html output
+  (let (sgml)
+    (let ((*sgml-output* t))
+      (setf sgml (call-next-method)))
+    (check-type sgml sgml-composer:element)
+    (if *sgml-output*
+        ;; the sgml output is already bound, create an sgml raw element with the html
+        (sgml-composer::make-element :raw nil
+                                     (sgml-composer:write-sgml sgml))
+        ;; sgml output not bound, write the html to reblocks stream
+        (sgml-composer:write-sgml sgml :destination reblocks/html:*stream*))))
+
+(defwidget sgml-test-1 (sgml-widget)
+  ())
+
+(defmethod render ((widget sgml-test-1))
+  ;;(break "hello")
+  (sgml-composer:sgml
+    (:div (:foo "foo")
+          "Hello world")))
+
+(with-output-to-string (reblocks/html:*stream*)
+  (render (make-instance 'sgml-test-1)))
