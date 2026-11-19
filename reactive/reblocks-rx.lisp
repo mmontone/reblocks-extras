@@ -158,12 +158,12 @@
          :accessor test-of)
    (rxvals :initarg :rxvals
            :accessor rxvals)
-   (true-renderer :initarg :true-renderer
-                  :accessor true-renderer
-                  :initform nil)
-   (false-renderer :initarg :false-renderer
-                   :accessor false-renderer
-                   :initform nil)))
+   (then :initarg :then
+         :accessor then
+         :initform nil)
+   (else :initarg :else
+         :accessor else
+         :initform nil)))
 
 (defun make-rx-element (tag attributes children &rest args)
   (let ((children (if (atom children)
@@ -192,14 +192,43 @@
                      :value (funcall value-lambda))))))
     widget))
 
+(defun make-rxlist-widget (rxlist item-renderer)
+  (make-instance 'rxlist-widget
+                 :rxlist rxlist
+                 :item-renderer item-renderer))
+
+(defun make-rxconditional-widget (test then else)
+  (make-instance 'rxconditional-widget
+                 :test test
+                 :then then
+                 :else else))
+
 (defun transform-sgml-forms (form)
   (if (atom form)
       form
       (cond
-        ((eql (first form) 'dolist))
-        ((eql (first form) 'if))
-        ((eql (first form) 'when))
-        ((eql (first form) 'unless))
+        ((eql (first form) 'dolist)
+         (destructuring-bind ((var rxlist) &body body) (cdr form)
+           `(make-rxlist-widget ,rxlist
+                                (lambda (,var) ,@body))))
+        ((eql (first form) 'if)
+         (destructuring-bind (test then else) (cdr form)
+           `(make-rxconditional-widget
+             (lambda () ,test)
+             (lambda () ,(transform-sgml-forms then))
+             (lambda () ,(transform-sgml-forms else)))))
+        ((eql (first form) 'when)
+         (destructuring-bind (test &body body) (cdr form)
+           `(make-rxconditional-widget
+             (lambda () ,test)
+             (lambda () ,@(mapcar #'transform-sgml-forms body))
+             nil)))
+        ((eql (first form) 'unless)
+         (destructuring-bind (test &body body) (cdr form)
+           `(make-rxconditional-widget
+             (lambda () (not ,test))
+             (lambda () ,@(mapcar #'transform-sgml-forms body))
+             nil)))
         ((keywordp (first form))
          (destructuring-bind (tag attrs &body body) form
            ;; inspect attributes. extract references to rxvar values.
@@ -238,10 +267,29 @@
 (eval (transform-sgml-forms '(:div (:foo "bar"))))
 
 (eval
- (macroexpand `(with-rxvals ((foo 1) (bar 2))
-                 ,(transform-sgml-forms
-                   `(:div (:foo (+ (@ foo) (@ bar)))
-                          (:span () "Hello"))))))
+ (macroexpand
+  `(with-rxvals ((foo 1) (bar 2))
+     ,(transform-sgml-forms
+       `(:div (:foo (+ (@ foo) (@ bar)))
+              (:span () "Hello"))))))
+
+(eval
+ (macroexpand
+  `(with-rxvals ((foo 1) (bar 2))
+     ,(transform-sgml-forms
+       `(when (@ foo)
+          (:div (:foo (+ (@ foo) (@ bar)))
+                (:span () "Hello")))))))
+
+(eval
+ (macroexpand
+  `(with-rxvals ((foo 1) (bar 2))
+     ,(transform-sgml-forms
+       `(if (@ foo)
+          (:div (:foo (+ (@ foo) (@ bar)))
+                (:span () "Hello"))
+          (:div () "No")
+          )))))
 
 (defwidget sgml-widget ()
   ()
