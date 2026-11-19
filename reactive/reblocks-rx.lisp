@@ -14,7 +14,8 @@
   (:import-from #:reblocks/widget
                 #:render
                 #:update
-                #:defwidget)
+                #:defwidget
+                #:widget)
   (:export #:@)
   (:documentation "Reactive Reblocks."))
 
@@ -251,10 +252,15 @@
 (defwidget sgml-test-2 (sgml-widget)
   ())
 
+(defmethod sgml-composer:as-sgml ((widget widget))
+  (if (typep widget 'sgml-widget)
+      (render-sgml widget)
+      (sgml-composer:make-element :raw nil (render widget))))
+
 (defmethod render-sgml ((widget sgml-test-2))
   (sgml-composer:sgml
     (:div (:class "test2")
-          (render-sgml (make-instance 'sgml-test-1)))))
+          (make-instance 'sgml-test-1))))
 
 (with-output-to-string (reblocks/html:*stream*)
   (render (make-instance 'sgml-test-2)))
