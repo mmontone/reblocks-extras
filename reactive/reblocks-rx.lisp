@@ -146,6 +146,18 @@
    (item-renderer :initarg :item-renderer
                   :accessor item-renderer)))
 
+(defwidget rxconditional-widget ()
+  ((test :initarg :test
+         :accessor test-of)
+   (rxvals :initarg :rxvals
+           :accessor rxvals)
+   (true-renderer :initarg :true-renderer
+                  :accessor true-renderer
+                  :initform nil)
+   (false-renderer :initarg :false-renderer
+                   :accessor false-renderer
+                   :initform nil)))
+
 (defun make-rx-element (tag attributes children &rest args)
   (let ((children (if (atom children)
                       (list children)
