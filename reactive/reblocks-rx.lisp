@@ -255,12 +255,15 @@
 (defmethod sgml-composer:as-sgml ((widget widget))
   (if (typep widget 'sgml-widget)
       (render-sgml widget)
-      (sgml-composer:make-element :raw nil (render widget))))
+      (sgml-composer:make-element :raw nil
+                                  (with-output-to-string (reblocks/html:*stream*)
+                                    (render widget)))))
 
 (defmethod render-sgml ((widget sgml-test-2))
   (sgml-composer:sgml
     (:div (:class "test2")
-          (make-instance 'sgml-test-1))))
+          (make-instance 'sgml-test-1)
+          (reblocks/widgets/string-widget:make-string-widget "Hello again"))))
 
 (with-output-to-string (reblocks/html:*stream*)
   (render (make-instance 'sgml-test-2)))
@@ -278,5 +281,8 @@
 
 (spinneret:with-html
   (:div (sgml-test-1)))
+
+(spinneret:with-html
+  (:div (make-instance 'sgml-test-2)))
 
 
