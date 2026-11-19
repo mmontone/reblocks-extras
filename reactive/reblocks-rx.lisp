@@ -246,3 +246,17 @@
 
 (with-output-to-string (reblocks/html:*stream*)
   (render (make-instance 'sgml-test-1)))
+
+(defmethod spinneret:html ((element sgml-composer:element))
+  (sgml-composer:write-sgml element :destination spinneret:*html*))
+
+(defun sgml-test-1 ()
+  (sgml-composer:sgml
+    (:div (:foo "fooo")
+          "Hello")))
+
+(spinneret:with-html
+  (:div "Hello"))
+
+(spinneret:with-html
+  (:div (sgml-test-1)))
