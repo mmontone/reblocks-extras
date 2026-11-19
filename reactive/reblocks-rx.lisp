@@ -55,7 +55,7 @@
 (defmethod print-object ((rxval rxvalue) stream)
   (format stream "@~s" (@ rxval)))
 
-(defun make-rxval (value)
+(defun make-rxval (&optional value)
   (make-instance 'rxvalue :value value))
 
 (defun onchange (rxval handler)
@@ -68,6 +68,16 @@
 ;; (onchange *rxval1* #'print)
 
 ;; (setf (@ *rxval1*) 25)
+
+(defmacro with-rxvals (vars &body body)
+  `(let ,(loop for var in vars
+               collect (list (if (listp var)
+                                 (car var)
+                                 var)
+                             (if (listp var)
+                                 `(make-rxval ,(second var))
+                                 `(make-rxval))))
+     ,@body))
 
 (defclass rxlist (rxvalue)
   ()
@@ -92,8 +102,8 @@
                      :accessor attribute-rxvars)))
 
 (defwidget rx-widget ()
-  ((children :initarg :children
-             :accessor children)
+  ((renderer :initarg :renderer
+             :accessor renderer)
    (css-classes :initarg :css-classes
                 :initform nil
                 :accessor widget-css-classes)
@@ -165,6 +175,23 @@
            :children (remove nil children)
            args)))
 
+(defun make-rx-widget (tag attributes renderer &key attrs-rxvars)
+  (let ((widget
+          (make-instance 'rx-widget
+                         :html-tag (cons tag attributes)
+                         :renderer renderer)))
+    ;; setup rxvars dependents
+    (dolist (attr-rxvars attrs-rxvars)
+      (destructuring-bind (attr value-lambda rxvars) attr-rxvars
+        (dolist (rxvar rxvars)
+          (onchange rxvar
+                    (reblocks/commands:add-command
+                     :set-attribute
+                     :widget widget
+                     :attribute attr
+                     :value (funcall value-lambda))))))
+    widget))
+
 (defun transform-sgml-forms (form)
   (if (atom form)
       form
@@ -174,7 +201,7 @@
         ((eql (first form) 'when))
         ((eql (first form) 'unless))
         ((keywordp (first form))
-         (destructuring-bind (tag attrs &body children) form
+         (destructuring-bind (tag attrs &body body) form
            ;; inspect attributes. extract references to rxvar values.
            ;; forms (@ place)
            (let ((attrs-rxvars (loop for attr in attrs by #'cddr
@@ -185,35 +212,36 @@
              (cond
                (attrs-rxvars
                 ;; if there are rxvars in attributes, create a reactive element
-                `(make-rx-element ,tag (list ,@attrs)
-                                  ,(cond
-                                     ((= (length children) 0) "")
-                                     ((= (length children) 1)
-                                      `(list ,(transform-sgml-forms (car children))))
-                                     ((> (length children) 1)
-                                      `(list ,@(mapcar #'transform-sgml-forms children))))
-                                  :attrs-rxvars (list
-                                                 ,@(loop for (attr . rxvars) in attrs-rxvars
-                                                         collect `(list ,attr
-                                                                        (lambda ()
-                                                                          ,(getf attrs attr))
-                                                                        (quote ,rxvars))))))
+                `(make-rx-widget ,tag (list ,@attrs)
+                                 (lambda () (with-sgml () ,@body))
+                                 :attrs-rxvars (list
+                                                ,@(loop for (attr . rxvars) in attrs-rxvars
+                                                        collect `(list ,attr
+                                                                       (lambda ()
+                                                                         ,(getf attrs attr))
+                                                                       (list ,@rxvars))))))
                ;; otherwise create a normal sgml element
                (t
                 `(sgml-composer::make-element
                   ,tag
                   (list ,@attrs)
                   ,(cond
-                     ((= (length children) 0) "")
-                     ((= (length children) 1)
-                      (transform-sgml-forms (car children)))
-                     ((> (length children) 1)
-                      `(list ,@(mapcar #'transform-sgml-forms children)))))))))))))
+                     ((= (length body) 0) "")
+                     ((= (length body) 1)
+                      (transform-sgml-forms (car body)))
+                     ((> (length body) 1)
+                      `(list ,@(mapcar #'transform-sgml-forms body)))))))))))))
+
+(defmacro with-sgml (args &body body)
+  `(progn ,(transform-sgml-forms body)))
 
 (eval (transform-sgml-forms '(:div (:foo "bar"))))
 
-(eval (transform-sgml-forms '(:div (:foo (+ (@ foo) (@ bar)))
-                              (:span () "Hello"))))
+(eval
+ (macroexpand `(with-rxvals ((foo 1) (bar 2))
+                 ,(transform-sgml-forms
+                   `(:div (:foo (+ (@ foo) (@ bar)))
+                          (:span () "Hello"))))))
 
 (defwidget sgml-widget ()
   ()
@@ -284,5 +312,3 @@
 
 (spinneret:with-html
   (:div (make-instance 'sgml-test-2)))
-
-
