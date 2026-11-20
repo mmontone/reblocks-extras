@@ -8,6 +8,8 @@
 
 (require :reblocks)
 (require :trivial-garbage)
+(require :mutils)
+(require :sgml-composer)
 
 (defpackage :reblocks-rx
   (:use :cl)
@@ -98,13 +100,6 @@
         (remove elem (@ rxlist) :test test :key key))
   (emit rxlist :removed elem)
   rxlist)
-
-(defclass rx-element (sgml-composer::element)
-  ((id :initarg :id
-       :accessor element-id
-       :initform (gen-id))
-   (attribute-rxvars :initarg :attribute-rxvars
-                     :accessor attribute-rxvars)))
 
 (defwidget rx-widget ()
   ((renderer :initarg :renderer
