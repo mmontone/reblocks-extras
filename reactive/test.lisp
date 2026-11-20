@@ -111,7 +111,6 @@
 
 (reblocks/preview:preview (make-instance 'counter))
 
+(require :reblocks-extras)
+
 (reblocks/extras/utils:test-session-code (lambda () (with-output-to-string (reblocks/html:*stream*) (render (make-instance 'counter)))))
-
-
-

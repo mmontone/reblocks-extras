@@ -304,8 +304,8 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                   :quote-char #\'))))
 
 (defmethod sgml-composer:as-sgml ((widget widget))
-  (if (typep widget 'sgml-widget)
-      (render-sgml widget)
-      (sgml-composer:make-element :raw nil
-                                  (with-output-to-string (reblocks/html:*stream*)
-                                    (render widget)))))
+  (sgml-composer:make-element :raw nil
+                              (with-output-to-string (reblocks/html:*stream*)
+                                (render widget))))
+(defmethod sgml-composer:as-sgml ((widget sgml-widget))
+  (render-sgml widget))
