@@ -279,8 +279,9 @@
         ;; return it
         (t form))))
 
-(defmacro with-sgml (args &body body)
-  `(progn ,(transform-sgml-forms body)))
+(defmacro with-sgml (args body)
+  (declare (ignore args))
+  (transform-sgml-forms body))
 
 (eval (transform-sgml-forms '(:div (:foo "bar"))))
 
@@ -389,3 +390,19 @@
 
 (spinneret:with-html
   (:div (make-instance 'sgml-test-2)))
+
+(defwidget counter (sgml-widget)
+  ((counter :initform (make-rxval 0)
+            :accessor counter)))
+
+(defmethod render-sgml ((widget counter))
+  (with-slots (counter) widget
+    (with-sgml ()
+      (:div ()
+            (:h2 () "A counter")
+            (:span () (format nil "Value: ~a" (@ counter)))
+            (:input (:class "button"
+                     :onclick (reblocks/actions:make-js-action
+                               (lambda (&rest args)
+                                 (ignore args)
+                                 (incf (@ counter))))))))))
