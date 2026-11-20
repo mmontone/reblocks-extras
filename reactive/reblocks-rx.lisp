@@ -132,18 +132,19 @@
   (widget-html-tag widget))
 
 (defmethod render ((widget rx-widget))
-  (let ((result (funcall (renderer widget) widget)))
-    (when (typep result 'reblocks/widget:widget)
-      (render result))))
+  (let ((result (funcall (renderer widget))))
+    (if (typep result 'reblocks/widget:widget)
+        (render result)
+        result)))
 
-(defun make-rx-widget (html-tag attributes children &key attr-rxvars rxvars)
+(defun make-rx-widget (html-tag attributes renderer &key attr-rxvars rxvars)
   "ATTR-RXVARS is a list of the form (attribute-name value-reader-lambda rxvars), with reactive variables found in the attribute value.
 RXVARS is a list of reactive variables found in the body of the widget."
   (let ((widget (make-instance 'rx-widget
                                :html-tag (if attributes (cons html-tag attributes)
                                              html-tag)
                                :css-classes (getf attributes :class)
-                               :children children)))
+                               :renderer renderer)))
     ;; register rxvar handlers
     ;; update view using set-attribute command when a reactive variable changes
     (dolist (rxvar attr-rxvars)
@@ -363,9 +364,11 @@ RXVARS is a list of reactive variables found in the body of the widget."
     (if *sgml-output*
         ;; the sgml output is already bound, create an sgml raw element with the html
         (sgml-composer::make-element :raw nil
-                                     (sgml-composer:write-sgml sgml))
+                                     (sgml-composer:write-sgml sgml
+                                                               :quote-char #\'))
         ;; sgml output not bound, write the html to reblocks stream
-        (sgml-composer:write-sgml sgml :destination reblocks/html:*stream*))))
+        (sgml-composer:write-sgml sgml :destination reblocks/html:*stream*
+                                  :quote-char #\'))))
 
 (defwidget sgml-test-1 (sgml-widget)
   ())
@@ -398,7 +401,8 @@ RXVARS is a list of reactive variables found in the body of the widget."
   (render (make-instance 'sgml-test-2)))
 
 (defmethod spinneret:html ((element sgml-composer:element))
-  (sgml-composer:write-sgml element :destination spinneret:*html*))
+  (sgml-composer:write-sgml element :destination spinneret:*html*
+                            :quote-char #\'))
 
 (defun sgml-test-1 ()
   (sgml-composer:sgml
@@ -424,8 +428,11 @@ RXVARS is a list of reactive variables found in the body of the widget."
       (:div ()
             (:h2 () "A counter")
             (:span () (format nil "Value: ~a" (@ counter)))
-            (:input (:class "button"
+            (:input (:type "button"
                      :onclick (reblocks/actions:make-js-action
                                (lambda (&rest args)
                                  (declare (ignore args))
-                                 (incf (@ counter))))))))))
+                                 (incf (@ counter))))
+                     :value "Increase"))))))
+
+(reblocks/preview:preview (make-instance 'counter))
