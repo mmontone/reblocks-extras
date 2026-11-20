@@ -97,7 +97,10 @@
   (with-slots (counter) widget
     (with-sgml ()
       (:div ()
-            (:h2 () "A counter")
+            (:h2 (:style (if (oddp (@ counter))
+                              "color:red;"
+                              "color:blue;"))
+                 "A counter")
             (:div ()
                   (if (oddp (@ counter))
                       (:span () "Counter is odd")
@@ -111,8 +114,14 @@
                                        (incf (@ counter))))
                            :value "Increase")))))))
 
+(defmethod reblocks/dependencies:get-dependencies ((app reblocks/preview:preview))
+  (append (reblocks-rx:get-dependencies) (call-next-method)))
+
 (reblocks/preview:preview (make-instance 'counter))
 
 (require :reblocks-extras)
 
 (reblocks/extras/utils:test-session-code (lambda () (with-output-to-string (reblocks/html:*stream*) (render (make-instance 'counter)))))
+
+(require :cl-json)
+(json:lisp-to-camel-case (symbol-name :background-color))

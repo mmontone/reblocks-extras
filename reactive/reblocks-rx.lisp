@@ -10,6 +10,8 @@
 (require :trivial-garbage)
 (require :mutils)
 (require :sgml-composer)
+(require :reblocks-extras-commands)
+(require :cl-json)
 
 (defpackage :reblocks-rx
   (:use :cl)
@@ -26,6 +28,9 @@
   (:documentation "Reactive Reblocks."))
 
 (in-package :reblocks-rx)
+
+(defun get-dependencies ()
+  (reblocks/extras/commands:get-dependencies))
 
 (defun find-rxvars (form &key ignore-sgml-forms dont-go-into)
   "If IGNORE-SGML-FORMS is T, then don't look into forms with the form: (:html-tag attrs &body body)"
@@ -145,10 +150,10 @@ RXVARS is a list of reactive variables found in the body of the widget."
                    (lambda (event &rest args)
                      (declare (ignore args))
                      (when (eql event :changed)
-                       (reblocks/commands:add-command
-                        :set-attribute
-                        :attr attr
-                        :value (funcall value-reader))))))))
+                       (reblocks/extras/commands:set-attribute
+                        widget
+                        (json:lisp-to-camel-case (symbol-name attr))
+                        (funcall value-reader))))))))
 
     ;; when a reactive variable of the body of the widget changes, update the widget
     (dolist (rxvar rxvars)
