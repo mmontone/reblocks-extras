@@ -128,7 +128,7 @@
         (render result)
         result)))
 
-(defun make-rx-widget (html-tag attributes renderer &key attr-rxvars rxvars)
+(defun make-rx-widget (html-tag attributes renderer &key attrs-rxvars rxvars)
   "ATTR-RXVARS is a list of the form (attribute-name value-reader-lambda rxvars), with reactive variables found in the attribute value.
 RXVARS is a list of reactive variables found in the body of the widget."
   (let ((widget (make-instance 'rx-widget
@@ -138,7 +138,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                :renderer renderer)))
     ;; register rxvar handlers
     ;; update view using set-attribute command when a reactive variable changes
-    (dolist (rxvar attr-rxvars)
+    (dolist (attr-rxvars attrs-rxvars)
       (destructuring-bind (attr value-reader rxvars) attr-rxvars
         (dolist (rxvar rxvars)
           (onevent rxvar
