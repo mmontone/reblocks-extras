@@ -21,17 +21,26 @@
 
 (in-package :reblocks-rx)
 
-(defun find-rxvars (form)
+(defun find-rxvars (form &key ignore-sgml-forms)
+  "If IGNORE-SGML-FORMS is T, then don't look into forms with the form: (:html-tag attrs &body body)"
   (when (listp form)
     (if (eq (car form) '@)
         ;; rxvar access found
         (list (second form))
         ;; look into subforms
-        (loop for subform in form
-              appending (find-rxvars subform)))))
+        (when (or (not ignore-sgml-forms) (not (keywordp (car form))))
+          (loop for subform in form
+                appending (find-rxvars
+                           subform
+                           :ignore-sgml-forms ignore-sgml-forms))))))
 
 ;; (find-rxvars '(@ hello))
 ;; (find-rxvars '(lambda () (+ (@ foo) (@ bar))))
+
+;; (find-rxvars '(div () (@ hello)))
+;; (find-rxvars '(:div () (@ hello)))
+;; (find-rxvars '(:div () (@ hello)) :ignore-sgml-forms t)
+;; (find-rxvars '((@ hello) (:div () (@ no))) :ignore-sgml-forms t)
 
 (defun gen-id ()
   (symbol-name (gensym "rx")))
@@ -237,18 +246,24 @@
                                      for value in (cdr attrs) by #'cddr
                                      for attr-rxvars = (find-rxvars value)
                                      when attr-rxvars
-                                       collect (cons attr attr-rxvars))))
+                                       collect (cons attr attr-rxvars)))
+                 (rxvars-in-body (find-rxvars body :ignore-sgml-forms t)))
              (cond
+               ;; if there are rxvars in attributes, create a reactive element
                (attrs-rxvars
-                ;; if there are rxvars in attributes, create a reactive element
                 `(make-rx-widget ,tag (list ,@attrs)
-                                 (lambda () (with-sgml () ,@body))
+                                 (lambda () ,@(transform-sgml-forms body))
                                  :attrs-rxvars (list
                                                 ,@(loop for (attr . rxvars) in attrs-rxvars
                                                         collect `(list ,attr
                                                                        (lambda ()
                                                                          ,(getf attrs attr))
                                                                        (list ,@rxvars))))))
+               ;; if the element body contains references to reactive variables, create a reactive widget
+               (rxvars-in-body
+                `(make-rx-widget ,tag (list ,@attrs)
+                                 (lambda () ,@(transform-sgml-forms body))
+                                 :rxvars (list ,@rxvars-in-body)))
                ;; otherwise create a normal sgml element
                (t
                 `(sgml-composer::make-element
@@ -259,7 +274,10 @@
                      ((= (length body) 1)
                       (transform-sgml-forms (car body)))
                      ((> (length body) 1)
-                      `(list ,@(mapcar #'transform-sgml-forms body)))))))))))))
+                      `(list ,@(mapcar #'transform-sgml-forms body))))))))))
+        ;; no match for the form
+        ;; return it
+        (t form))))
 
 (defmacro with-sgml (args &body body)
   `(progn ,(transform-sgml-forms body)))
@@ -286,10 +304,21 @@
   `(with-rxvals ((foo 1) (bar 2))
      ,(transform-sgml-forms
        `(if (@ foo)
-          (:div (:foo (+ (@ foo) (@ bar)))
-                (:span () "Hello"))
-          (:div () "No")
-          )))))
+            (:div (:foo (+ (@ foo) (@ bar)))
+                  (:span () "Hello"))
+            (:div () "No")
+            )))))
+
+(transform-sgml-forms
+ `(:div ()
+        (format nil "Foo is: ~a" (@ foo))))
+
+(eval
+ (macroexpand
+  `(with-rxvals ((foo 1) (bar 2))
+     ,(transform-sgml-forms
+       `(:div ()
+              (format nil "Foo is: ~a" (@ foo)))))))
 
 (defwidget sgml-widget ()
   ()
