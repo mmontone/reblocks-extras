@@ -27,7 +27,7 @@ function reblocksSetAttribute(params) {
     if (typeof params.path === 'string') {
         target = target.find(params.path);
     }
-    target.setAttribute(params.attribute, params.value);
+    target.attr(params.attribute, params.value);
 }
 
 function reblocksPrompt(params) {
@@ -58,7 +58,7 @@ function reblocksAlert(params) {
     });
 }
 
-jQuery(function () {
+window.addEventListener('DOMContentLoaded', function () {
     window.commandHandlers['addClass'] = reblocksAddClass;
     window.commandHandlers['removeClass'] = reblocksRemoveClass;
     window.commandHandlers['toggleClass'] = reblocksToggleClass;
