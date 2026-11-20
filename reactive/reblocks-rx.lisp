@@ -21,18 +21,20 @@
 
 (in-package :reblocks-rx)
 
-(defun find-rxvars (form &key ignore-sgml-forms)
+(defun find-rxvars (form &key ignore-sgml-forms dont-go-into)
   "If IGNORE-SGML-FORMS is T, then don't look into forms with the form: (:html-tag attrs &body body)"
   (when (listp form)
-    (if (eq (car form) '@)
-        ;; rxvar access found
+    (when (and (or (not ignore-sgml-forms) (not (keywordp (car form))))
+               (not (member (car form) dont-go-into)))
+      (if (eq (car form) '@)
+          ;; rxvar access found
         (list (second form))
         ;; look into subforms
-        (when (or (not ignore-sgml-forms) (not (keywordp (car form))))
-          (loop for subform in form
-                appending (find-rxvars
-                           subform
-                           :ignore-sgml-forms ignore-sgml-forms))))))
+        (loop for subform in form
+              appending (find-rxvars
+                         subform
+                         :ignore-sgml-forms ignore-sgml-forms
+                         :dont-go-into dont-go-into))))))
 
 ;; (find-rxvars '(@ hello))
 ;; (find-rxvars '(lambda () (+ (@ foo) (@ bar))))
@@ -41,6 +43,8 @@
 ;; (find-rxvars '(:div () (@ hello)))
 ;; (find-rxvars '(:div () (@ hello)) :ignore-sgml-forms t)
 ;; (find-rxvars '((@ hello) (:div () (@ no))) :ignore-sgml-forms t)
+;; (find-rxvars '((@ hello) (setf(@ foo) 22)) :ignore-sgml-forms t)
+;; (find-rxvars '((@ hello) (setf (@ foo) 22)) :ignore-sgml-forms t :dont-go-into '(setf))
 
 (defun gen-id ()
   (symbol-name (gensym "rx")))
@@ -245,9 +249,13 @@
            (let ((attrs-rxvars (loop for attr in attrs by #'cddr
                                      for value in (cdr attrs) by #'cddr
                                      for attr-rxvars = (find-rxvars value)
-                                     when attr-rxvars
+                                     ;; actions are not for being updated..or should they?
+                                     when (and (not (member attr '(:onclick)))
+                                               attr-rxvars)
                                        collect (cons attr attr-rxvars)))
-                 (rxvars-in-body (find-rxvars body :ignore-sgml-forms t)))
+                 (rxvars-in-body (find-rxvars body
+                                              :ignore-sgml-forms t
+                                              :dont-go-into '(setf incf decf push))))
              (cond
                ;; if there are rxvars in attributes, create a reactive element
                (attrs-rxvars
