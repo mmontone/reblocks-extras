@@ -284,24 +284,11 @@ RXVARS is a list of reactive variables found in the body of the widget."
 
 (defgeneric render-sgml (widget))
 
-(defvar *sgml-output* nil)
-
 (defmethod render ((widget sgml-widget))
-  ;; capture html output
-  ;; if sgml output is already bound, create an sgml raw element with the html
-  ;; otherwise, output the sgml to the html output
-  (let (sgml)
-    (let ((*sgml-output* t))
-      (setf sgml (render-sgml widget)))
+  (let ((sgml (render-sgml widget)))
     (check-type sgml sgml-composer:element)
-    (if *sgml-output*
-        ;; the sgml output is already bound, create an sgml raw element with the html
-        (sgml-composer::make-element :raw nil
-                                     (sgml-composer:write-sgml sgml
-                                                               :quote-char #\'))
-        ;; sgml output not bound, write the html to reblocks stream
-        (sgml-composer:write-sgml sgml :destination reblocks/html:*stream*
-                                  :quote-char #\'))))
+    (sgml-composer:write-sgml sgml :destination reblocks/html:*stream*
+                                   :quote-char #\')))
 
 (defmethod sgml-composer:as-sgml ((widget widget))
   (sgml-composer:make-element :raw nil
