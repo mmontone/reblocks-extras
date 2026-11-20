@@ -28,13 +28,13 @@
                (not (member (car form) dont-go-into)))
       (if (eq (car form) '@)
           ;; rxvar access found
-        (list (second form))
-        ;; look into subforms
-        (loop for subform in form
-              appending (find-rxvars
-                         subform
-                         :ignore-sgml-forms ignore-sgml-forms
-                         :dont-go-into dont-go-into))))))
+          (list (second form))
+          ;; look into subforms
+          (loop for subform in form
+                appending (find-rxvars
+                           subform
+                           :ignore-sgml-forms ignore-sgml-forms
+                           :dont-go-into dont-go-into))))))
 
 ;; (find-rxvars '(@ hello))
 ;; (find-rxvars '(lambda () (+ (@ foo) (@ bar))))
@@ -71,7 +71,7 @@
 (defun make-rxval (&optional value)
   (make-instance 'rxvalue :value value))
 
-(defun onchange (rxval handler)
+(defun onevent (rxval handler)
   (push handler (dependents rxval)))
 
 ;; (defvar *rxval1* (make-rxval 2))
@@ -136,7 +136,9 @@
     (when (typep result 'reblocks/widget:widget)
       (render result))))
 
-(defun make-rx-widget (html-tag attributes children &key attr-rxvars)
+(defun make-rx-widget (html-tag attributes children &key attr-rxvars rxvars)
+  "ATTR-RXVARS is a list of the form (attribute-name value-reader-lambda rxvars), with reactive variables found in the attribute value.
+RXVARS is a list of reactive variables found in the body of the widget."
   (let ((widget (make-instance 'rx-widget
                                :html-tag (if attributes (cons html-tag attributes)
                                              html-tag)
@@ -147,13 +149,26 @@
     (dolist (rxvar attr-rxvars)
       (destructuring-bind (attr value-reader rxvars) attr-rxvars
         (dolist (rxvar rxvars)
-          (on :change rxvar
-              (lambda (value)
-                (declare (ignore value))
-                (reblocks/commands:add-command
-                 :set-attribute
-                 :attr attr
-                 :value (funcall value-reader)))))))))
+          (onevent rxvar
+                   (lambda (event &rest args)
+                     (declare (ignore args))
+                     (when (eql event :changed)
+                       (reblocks/commands:add-command
+                        :set-attribute
+                        :attr attr
+                        :value (funcall value-reader))))))))
+
+    ;; when a reactive variable of the body of the widget changes, update the widget
+    (dolist (rxvar rxvars)
+      (onevent rxvar
+               (lambda (event &rest args)
+                 (declare (ignore args))
+                 (when (eql event :changed)
+                   (update widget)))))
+
+    ;; return the widget
+    widget
+    ))
 
 (defclass rx-dolist (sgml-composer::element)
   ())
@@ -412,5 +427,5 @@
             (:input (:class "button"
                      :onclick (reblocks/actions:make-js-action
                                (lambda (&rest args)
-                                 (ignore args)
+                                 (declare (ignore args))
                                  (incf (@ counter))))))))))
