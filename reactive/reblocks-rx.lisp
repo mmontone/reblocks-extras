@@ -74,14 +74,6 @@
 (defun onevent (rxval handler)
   (push handler (dependents rxval)))
 
-;; (defvar *rxval1* (make-rxval 2))
-
-;; (@ *rxval1*)
-
-;; (onchange *rxval1* #'print)
-
-;; (setf (@ *rxval1*) 25)
-
 (defmacro with-rxvals (vars &body body)
   `(let ,(loop for var in vars
                collect (list (if (listp var)
@@ -170,9 +162,6 @@ RXVARS is a list of reactive variables found in the body of the widget."
     ;; return the widget
     widget
     ))
-
-(defclass rx-dolist (sgml-composer::element)
-  ())
 
 ;; if rxlist emits a :changed event, then redraw the whole list
 ;; if rxlist emits a :added, :removed, :inserted event, then add, remove of insert an HTML node via Reblocks commands.
@@ -323,44 +312,6 @@ RXVARS is a list of reactive variables found in the body of the widget."
   (declare (ignore args))
   (transform-sgml-forms body))
 
-(eval (transform-sgml-forms '(:div (:foo "bar"))))
-
-(eval
- (macroexpand
-  `(with-rxvals ((foo 1) (bar 2))
-     ,(transform-sgml-forms
-       `(:div (:foo (+ (@ foo) (@ bar)))
-              (:span () "Hello"))))))
-
-(eval
- (macroexpand
-  `(with-rxvals ((foo 1) (bar 2))
-     ,(transform-sgml-forms
-       `(when (@ foo)
-          (:div (:foo (+ (@ foo) (@ bar)))
-                (:span () "Hello")))))))
-
-(eval
- (macroexpand
-  `(with-rxvals ((foo 1) (bar 2))
-     ,(transform-sgml-forms
-       `(if (@ foo)
-            (:div (:foo (+ (@ foo) (@ bar)))
-                  (:span () "Hello"))
-            (:div () "No")
-            )))))
-
-(transform-sgml-forms
- `(:div ()
-        (format nil "Foo is: ~a" (@ foo))))
-
-(eval
- (macroexpand
-  `(with-rxvals ((foo 1) (bar 2))
-     ,(transform-sgml-forms
-       `(:div ()
-              (format nil "Foo is: ~a" (@ foo)))))))
-
 (defwidget sgml-widget ()
   ()
   (:documentation "Widget renderer using sgml-composer"))
@@ -386,72 +337,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
         (sgml-composer:write-sgml sgml :destination reblocks/html:*stream*
                                   :quote-char #\'))))
 
-(defwidget sgml-test-1 (sgml-widget)
-  ())
-
-(defmethod render-sgml ((widget sgml-test-1))
-  (sgml-composer:sgml
-    (:div (:foo "foo")
-          "Hello world")))
-
-(with-output-to-string (reblocks/html:*stream*)
-  (render (make-instance 'sgml-test-1)))
-
-(defwidget sgml-test-2 (sgml-widget)
-  ())
-
 (defmethod sgml-composer:as-sgml ((widget widget))
   (if (typep widget 'sgml-widget)
       (render-sgml widget)
       (sgml-composer:make-element :raw nil
                                   (with-output-to-string (reblocks/html:*stream*)
                                     (render widget)))))
-
-(defmethod render-sgml ((widget sgml-test-2))
-  (sgml-composer:sgml
-    (:div (:class "test2")
-          (make-instance 'sgml-test-1)
-          (reblocks/widgets/string-widget:make-string-widget "Hello again"))))
-
-(with-output-to-string (reblocks/html:*stream*)
-  (render (make-instance 'sgml-test-2)))
-
-(defmethod spinneret:html ((element sgml-composer:element))
-  (sgml-composer:write-sgml element :destination spinneret:*html*
-                            :quote-char #\'))
-
-(defun sgml-test-1 ()
-  (sgml-composer:sgml
-    (:div (:foo "fooo")
-          "Hello")))
-
-(spinneret:with-html
-  (:div "Hello"))
-
-(spinneret:with-html
-  (:div (sgml-test-1)))
-
-(spinneret:with-html
-  (:div (make-instance 'sgml-test-2)))
-
-(defwidget counter (sgml-widget)
-  ((counter :initform (make-rxval 0)
-            :accessor counter)))
-
-(defmethod render-sgml ((widget counter))
-  (with-slots (counter) widget
-    (with-sgml ()
-      (:div ()
-            (:h2 () "A counter")
-            (if (oddp (@ counter))
-                (:span () "Counter is odd")
-                (:span () "Counter is even"))
-            (:span () (format nil "Value: ~a" (@ counter)))
-            (:input (:type "button"
-                     :onclick (reblocks/actions:make-js-action
-                               (lambda (&rest args)
-                                 (declare (ignore args))
-                                 (incf (@ counter))))
-                     :value "Increase"))))))
-
-(reblocks/preview:preview (make-instance 'counter))
