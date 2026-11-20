@@ -182,11 +182,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
    (item-renderer :initarg :item-renderer
                   :accessor item-renderer)))
 
-(defwidget rxconditional-widget ()
+(defwidget rxconditional-widget (sgml-widget)
   ((test :initarg :test
          :accessor test-of)
-   (rxvals :initarg :rxvals
-           :accessor rxvals)
    (then :initarg :then
          :accessor then
          :initform nil)
@@ -213,12 +211,14 @@ RXVARS is a list of reactive variables found in the body of the widget."
     (dolist (attr-rxvars attrs-rxvars)
       (destructuring-bind (attr value-lambda rxvars) attr-rxvars
         (dolist (rxvar rxvars)
-          (onchange rxvar
-                    (reblocks/commands:add-command
-                     :set-attribute
-                     :widget widget
-                     :attribute attr
-                     :value (funcall value-lambda))))))
+          (onevent rxvar
+                   (lambda (event &rest args)
+                     (declare (ignore event args))
+                     (reblocks/commands:add-command
+                      :set-attribute
+                      :widget widget
+                      :attribute attr
+                      :value (funcall value-lambda)))))))
     widget))
 
 (defun make-rxlist-widget (rxlist item-renderer)
@@ -226,11 +226,24 @@ RXVARS is a list of reactive variables found in the body of the widget."
                  :rxlist rxlist
                  :item-renderer item-renderer))
 
-(defun make-rxconditional-widget (test then else)
-  (make-instance 'rxconditional-widget
-                 :test test
-                 :then then
-                 :else else))
+(defun make-rxconditional-widget (test then else &key rxvars)
+  (let ((widget
+          (make-instance 'rxconditional-widget
+                         :test test
+                         :then then
+                         :else else)))
+    (dolist (rxvar rxvars)
+      (onevent rxvar
+               (lambda (event &rest args)
+                 (declare (ignore event args))
+                 (update widget))))
+
+    widget))
+
+(defmethod render-sgml ((widget rxconditional-widget))
+  (if (funcall (test-of widget))
+      (funcall (then widget))
+      (funcall (else widget))))
 
 (defun transform-sgml-forms (form)
   (if (atom form)
@@ -245,19 +258,22 @@ RXVARS is a list of reactive variables found in the body of the widget."
            `(make-rxconditional-widget
              (lambda () ,test)
              (lambda () ,(transform-sgml-forms then))
-             (lambda () ,(transform-sgml-forms else)))))
+             (lambda () ,(transform-sgml-forms else))
+             :rxvars (list ,@(find-rxvars test)))))
         ((eql (first form) 'when)
          (destructuring-bind (test &body body) (cdr form)
            `(make-rxconditional-widget
              (lambda () ,test)
              (lambda () ,@(mapcar #'transform-sgml-forms body))
-             nil)))
+             nil
+             :rxvars (list ,@(find-rxvars test)))))
         ((eql (first form) 'unless)
          (destructuring-bind (test &body body) (cdr form)
            `(make-rxconditional-widget
              (lambda () (not ,test))
              (lambda () ,@(mapcar #'transform-sgml-forms body))
-             nil)))
+             nil
+             :rxvars (list ,@(find-rxvars test)))))
         ((keywordp (first form))
          (destructuring-bind (tag attrs &body body) form
            ;; inspect attributes. extract references to rxvar values.
@@ -271,7 +287,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                        collect (cons attr attr-rxvars)))
                  (rxvars-in-body (find-rxvars body
                                               :ignore-sgml-forms t
-                                              :dont-go-into '(setf incf decf push))))
+                                              :dont-go-into '(setf incf decf push if when unless dolist))))
              (cond
                ;; if there are rxvars in attributes, create a reactive element
                (attrs-rxvars
@@ -427,6 +443,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
     (with-sgml ()
       (:div ()
             (:h2 () "A counter")
+            (if (oddp (@ counter))
+                (:span () "Counter is odd")
+                (:span () "Counter is even"))
             (:span () (format nil "Value: ~a" (@ counter)))
             (:input (:type "button"
                      :onclick (reblocks/actions:make-js-action
