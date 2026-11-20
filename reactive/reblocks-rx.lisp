@@ -18,7 +18,11 @@
                 #:update
                 #:defwidget
                 #:widget)
-  (:export #:@)
+  (:export #:@
+           #:get-dependencies
+           #:sgml-widget
+           #:render-sgml
+           #:with-rx-vals)
   (:documentation "Reactive Reblocks."))
 
 (in-package :reblocks-rx)
@@ -108,7 +112,7 @@
                 :initform nil
                 :accessor widget-css-classes)
    (html-tag :initarg :html-tag
-             :initform :div
+             :initform :span
              :accessor widget-html-tag))
   (:documentation "Reactive widget"))
 
@@ -175,6 +179,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
    (else :initarg :else
          :accessor else
          :initform nil)))
+
+(defmethod reblocks/widget:get-html-tag ((widget rxconditional-widget))
+  :span)
 
 (defun make-rxlist-widget (rxlist item-renderer)
   (make-instance 'rxlist-widget

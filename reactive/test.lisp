@@ -5,7 +5,7 @@
 
 (@ *rxval1*)
 
-(onchange *rxval1* #'print)
+(onevent *rxval1* #'print)
 
 (setf (@ *rxval1*) 25)
 
@@ -98,16 +98,18 @@
     (with-sgml ()
       (:div ()
             (:h2 () "A counter")
-            (if (oddp (@ counter))
-                (:span () "Counter is odd")
-                (:span () "Counter is even"))
-            (:span () (format nil "Value: ~a" (@ counter)))
-            (:input (:type "button"
-                     :onclick (reblocks/actions:make-js-action
-                               (lambda (&rest args)
-                                 (declare (ignore args))
-                                 (incf (@ counter))))
-                     :value "Increase"))))))
+            (:div ()
+                  (if (oddp (@ counter))
+                      (:span () "Counter is odd")
+                      (:span () "Counter is even")))
+            (:div () (format nil "Value: ~a" (@ counter)))
+            (:div ()
+                  (:input (:type "button"
+                           :onclick (reblocks/actions:make-js-action
+                                     (lambda (&rest args)
+                                       (declare (ignore args))
+                                       (incf (@ counter))))
+                           :value "Increase")))))))
 
 (reblocks/preview:preview (make-instance 'counter))
 
