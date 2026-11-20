@@ -176,35 +176,6 @@ RXVARS is a list of reactive variables found in the body of the widget."
          :accessor else
          :initform nil)))
 
-(defun make-rx-element (tag attributes children &rest args)
-  (let ((children (if (atom children)
-                      (list children)
-                      children)))
-    (apply #'make-instance 'rx-element
-           :tag tag
-           :attributes attributes
-           :children (remove nil children)
-           args)))
-
-(defun make-rx-widget (tag attributes renderer &key attrs-rxvars)
-  (let ((widget
-          (make-instance 'rx-widget
-                         :html-tag (cons tag attributes)
-                         :renderer renderer)))
-    ;; setup rxvars dependents
-    (dolist (attr-rxvars attrs-rxvars)
-      (destructuring-bind (attr value-lambda rxvars) attr-rxvars
-        (dolist (rxvar rxvars)
-          (onevent rxvar
-                   (lambda (event &rest args)
-                     (declare (ignore event args))
-                     (reblocks/commands:add-command
-                      :set-attribute
-                      :widget widget
-                      :attribute attr
-                      :value (funcall value-lambda)))))))
-    widget))
-
 (defun make-rxlist-widget (rxlist item-renderer)
   (make-instance 'rxlist-widget
                  :rxlist rxlist
