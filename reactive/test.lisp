@@ -112,7 +112,13 @@
                                      (lambda (&rest args)
                                        (declare (ignore args))
                                        (incf (@ counter))))
-                           :value "Increase")))))))
+                           :value "Increase"))
+                  (:input (:type "button"
+                           :onclick (reblocks/actions:make-js-action
+                                     (lambda (&rest args)
+                                       (declare (ignore args))
+                                       (setf (@ counter) 0)))
+                           :value "Reset")))))))
 
 (defmethod reblocks/dependencies:get-dependencies ((app reblocks/preview:preview))
   (append (reblocks-rx:get-dependencies) (call-next-method)))
