@@ -131,3 +131,14 @@
 
 (require :cl-json)
 (json:lisp-to-camel-case (symbol-name :background-color))
+
+(defwidget multicounter (sgml-widget)
+  ())
+
+(defmethod render-sgml ((widget multicounter))
+  (with-sgml ()
+    (:div ()
+          (loop for i from 1 to 10 collect
+                                   (make-instance 'counter)))))
+
+(reblocks/preview:preview (make-instance 'multicounter))
