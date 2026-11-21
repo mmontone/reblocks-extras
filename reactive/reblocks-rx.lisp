@@ -312,3 +312,40 @@ RXVARS is a list of reactive variables found in the body of the widget."
   (sgml-composer:make-element :raw nil
                               (with-output-to-string (reblocks/html:*stream*)
                                 (render widget))))
+
+(defclass rx-formula (rx-object)
+  ((rxvars :initarg :rxvars
+           :accessor rxvars)
+   (formula-fn :initarg :formula-fn
+               :accessor formula-fn)))
+
+(defmethod initialize-instance :after ((rx-formula rx-formula) &rest initargs)
+  (declare (ignore initargs))
+  (dolist (rxvar (rxvars rx-formula))
+    (onevent rxvar (lambda (event &rest args)
+                     (declare (ignore args))
+                     (when (eql event :changed)
+                       (emit rx-formula :changed
+                             (funcall (formula-fn rx-formula))))))))
+
+(defmethod @ ((rx-formula rx-formula))
+    (funcall (formula-fn rx-formula)))
+
+(defmacro rxformula (&body body)
+  `(make-instance 'rx-formula
+                  :formula-fn (lambda () ,@body)
+                  :rxvars (list ,@(find-rxvars body))))
+
+;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
+
+(defwidget rx-attr-widget ()
+  ()
+  (:documentation "A widget that supports reactivity at attributes position."))
+
+(defmethod reblocks/widget:get-css-classes :around ((widget rx-attr-widget))
+  (let ((css-classes (call-next-method)))
+    (if (typep css-classes 'rx-object)
+        (@ css-classes))))
+
+(defmethod reblocks/widget:get-html-tag ((widget rx-attr-widget))
+  (widget-html-tag widget))
