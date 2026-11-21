@@ -209,8 +209,14 @@ RXVARS is a list of reactive variables found in the body of the widget."
 
 (defmethod render-sgml ((widget rxconditional-widget))
   (if (funcall (test-of widget))
-      (funcall (then widget))
-      (funcall (else widget))))
+      (if (then widget)
+          (funcall (then widget))
+          ;; if there's no then clause then render empty
+          (sgml-composer:sgml (:span ())))
+      (if (else widget)
+          (funcall (else widget))
+          ;; if there's no else clause then render empty
+          (sgml-composer:sgml (:span ())))))
 
 (defun transform-sgml-forms (form)
   (if (atom form)

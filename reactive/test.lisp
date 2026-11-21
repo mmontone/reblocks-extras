@@ -105,6 +105,10 @@
                   (if (oddp (@ counter))
                       (:span () "Counter is odd")
                       (:span () "Counter is even")))
+            (when (zerop (mod (@ counter) 7))
+              (:div () "Divisible by 7!"))
+            (unless (zerop (mod (@ counter) 7))
+              (:div () "Not Divisible by 7!"))
             (:div () (format nil "Value: ~a" (@ counter)))
             (:div ()
                   (:input (:type "button"
