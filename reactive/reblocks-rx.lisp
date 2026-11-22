@@ -339,13 +339,31 @@ RXVARS is a list of reactive variables found in the body of the widget."
 ;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
 
 (defwidget rx-attr-widget ()
-  ()
+  ((attributes :initarg :attributes
+               :accessor html-attributes
+               :initform nil
+               :documentation "A property list with HTML attributes for the widget. Attribute values can be reactive objects; when they change, the DOM is updated."))
   (:documentation "A widget that supports reactivity at attributes position."))
 
-(defmethod reblocks/widget:get-css-classes :around ((widget rx-attr-widget))
-  (let ((css-classes (call-next-method)))
-    (if (typep css-classes 'rx-object)
-        (@ css-classes))))
+(defmethod set-html-attribute ((widget widget) attribute value)
+  (reblocks/extras/commands:set-attribute widget attribute value))
 
-(defmethod reblocks/widget:get-html-tag ((widget rx-attr-widget))
-  (widget-html-tag widget))
+(defmethod reblocks/widget:get-html-tag :around ((widget rx-attr-widget))
+  ;; return the widget attribute values
+  (let ((html-tag-and-attributes (call-next-method)))
+    (let ((html-tag (if (listp html-tag-and-attributes)
+                        (car html-tag-and-attributes)
+                        html-tag-and-attributes))
+          (attributes (append (when (listp html-tag-and-attributes)
+                                (rest html-tag-and-attributes))
+                              (html-attributes widget))))
+      (if (not attributes)
+          html-tag
+          (cons (car html-tag-and-attributes)
+                (mutils-utils:map-plist
+                 (lambda (attr-name attr-value)
+                   (declare (ignore attr-name))
+                   (if (typep attr-value 'rx-object)
+                       (@  attr-value)
+                       attr-value))
+                 attributes))))))
