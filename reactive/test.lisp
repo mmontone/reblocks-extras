@@ -146,3 +146,21 @@
                                    (make-instance 'counter)))))
 
 (reblocks/preview:preview (make-instance 'multicounter))
+
+(defwidget rx-attr-widget-test (rx-attr-widget)
+  ((background-color :initarg :background-color
+                     :accessor background-color
+                     :type rx-object
+                     :initform (make-rxval "red")))
+  (:default-initargs
+   :attributes (lambda (widget)
+                 (list :style (rxformula (format nil "backgroundColor: ~a" (@ (background-color widget))))))))
+
+(defmethod render ((widget rx-attr-widget-test))
+  (with-html ()
+    (:input :type "button"
+            :onclick (reblocks/actions:make-js-action (lambda (&rest args)
+                                                        (declare (ignore args))
+                                                        (setf (@ (background-color widget)) "red"))))))
+
+(reblocks/preview:preview (make-instance 'rx-attr-widget-test))

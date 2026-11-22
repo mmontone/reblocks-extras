@@ -14,7 +14,7 @@
 (require :cl-json)
 
 (defpackage :reblocks-rx
-  (:use :cl)
+  (:use :cl #:reblocks/html)
   (:import-from #:reblocks/widget
                 #:render
                 #:update
@@ -356,7 +356,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
                         html-tag-and-attributes))
           (attributes (append (when (listp html-tag-and-attributes)
                                 (rest html-tag-and-attributes))
-                              (html-attributes widget))))
+                              (etypecase (html-attributes widget)
+                                (list (html-attributes widget))
+                                (function (funcall (html-attributes widget) widget))))))
       (if (not attributes)
           html-tag
           (cons (car html-tag-and-attributes)
