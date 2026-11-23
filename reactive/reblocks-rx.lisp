@@ -96,6 +96,31 @@
                                  `(make-rxval))))
      ,@body))
 
+(defclass rx-formula (rxobject)
+  ((rxvars :initarg :rxvars
+           :accessor rxvars)
+   (formula-fn :initarg :formula-fn
+               :accessor formula-fn)))
+
+(defmethod initialize-instance :after ((rx-formula rx-formula) &rest initargs)
+  (declare (ignore initargs))
+  (dolist (rxvar (remove-duplicates (rxvars rx-formula)))
+    (onevent rxvar (lambda (event &rest args)
+                     (declare (ignore args))
+                     (when (eql event :changed)
+                       (emit rx-formula :changed
+                             (funcall (formula-fn rx-formula))))))))
+
+(defmethod @ ((rx-formula rx-formula))
+    (funcall (formula-fn rx-formula)))
+
+(defmacro rxformula (&body body)
+  `(make-instance 'rx-formula
+                  :formula-fn (lambda () ,@body)
+                  :rxvars (list ,@(find-rxvars body))))
+
+;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
+
 (defclass rxlist (rxvalue)
   ()
   (:documentation "A reactive list. Signals different events when element is added, inserted, removed."))
@@ -146,7 +171,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
     ;; update view using set-attribute command when a reactive variable changes
     (dolist (attr-rxvars attrs-rxvars)
       (destructuring-bind (attr value-reader rxvars) attr-rxvars
-        (dolist (rxvar rxvars)
+        (dolist (rxvar (remove-duplicates rxvars))
           (onevent rxvar
                    (lambda (event &rest args)
                      (declare (ignore args))
@@ -157,7 +182,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                         (funcall value-reader))))))))
 
     ;; when a reactive variable of the body of the widget changes, update the widget
-    (dolist (rxvar rxvars)
+    (dolist (rxvar (remove-duplicates rxvars))
       (onevent rxvar
                (lambda (event &rest args)
                  (declare (ignore args))
@@ -200,7 +225,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                          :test test
                          :then then
                          :else else)))
-    (dolist (rxvar rxvars)
+    (dolist (rxvar (remove-duplicates rxvars))
       (onevent rxvar
                (lambda (event &rest args)
                  (declare (ignore event args))
@@ -313,31 +338,6 @@ RXVARS is a list of reactive variables found in the body of the widget."
   (sgml-composer:make-element :raw nil
                               (with-output-to-string (reblocks/html:*stream*)
                                 (render widget))))
-
-(defclass rx-formula (rxobject)
-  ((rxvars :initarg :rxvars
-           :accessor rxvars)
-   (formula-fn :initarg :formula-fn
-               :accessor formula-fn)))
-
-(defmethod initialize-instance :after ((rx-formula rx-formula) &rest initargs)
-  (declare (ignore initargs))
-  (dolist (rxvar (rxvars rx-formula))
-    (onevent rxvar (lambda (event &rest args)
-                     (declare (ignore args))
-                     (when (eql event :changed)
-                       (emit rx-formula :changed
-                             (funcall (formula-fn rx-formula))))))))
-
-(defmethod @ ((rx-formula rx-formula))
-    (funcall (formula-fn rx-formula)))
-
-(defmacro rxformula (&body body)
-  `(make-instance 'rx-formula
-                  :formula-fn (lambda () ,@body)
-                  :rxvars (list ,@(find-rxvars body))))
-
-;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
 
 ;; reactive widget attributes
 
