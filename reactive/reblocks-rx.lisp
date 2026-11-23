@@ -336,7 +336,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                       `(list ,@(mapcar #'transform-sgml-forms body))))))))))
         ;; no match for the form
         ;; return it
-        (t form))))
+        (t (mapcar #'transform-sgml-forms form)))))
 
 (defmacro with-sgml (args body)
   (declare (ignore args))

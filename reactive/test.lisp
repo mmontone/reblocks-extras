@@ -175,7 +175,7 @@
       (:div ()
             (:ul ()
                  (dolist (task (@ (tasks widget)))
-                   (with-sgml () (:li () task))))
+                   (:li () task)))
             (:input (:type "text"
                      :onchange (reblocks/extras/utils:make-js-value-action
                                 (lambda (&rest args &key value)
