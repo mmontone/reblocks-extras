@@ -133,9 +133,6 @@
 
 (reblocks/extras/utils:test-session-code (lambda () (with-output-to-string (reblocks/html:*stream*) (render (make-instance 'counter)))))
 
-(require :cl-json)
-(json:lisp-to-camel-case (symbol-name :background-color))
-
 (defwidget multicounter (sgml-widget)
   ())
 

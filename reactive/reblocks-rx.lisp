@@ -11,6 +11,7 @@
 (require :mutils)
 (require :sgml-composer)
 (require :reblocks-extras-commands)
+(require :reblocks-extras-widgets)
 
 (defpackage :reblocks-rx
   (:use :cl #:reblocks/html)
@@ -127,13 +128,19 @@
 
 (defun add (elem rxlist)
   (push elem (@ rxlist))
-  (emit rxlist :added elem)
+  (emit rxlist :changed :insert elem 0)
+  rxlist)
+
+(defun add-last (elem rxlist)
+  (setf (@ rxlist)
+        (reblocks/utils/list:ninsert (@ rxlist) elem (length (@ rxlist))))
+  (emit rxlist :changed :insert elem (1- (length (@ rxlist))))
   rxlist)
 
 (defun rxlist-remove (elem rxlist &key (test #'eql) key)
   (setf (@ rxlist)
         (remove elem (@ rxlist) :test test :key key))
-  (emit rxlist :removed elem)
+  (emit rxlist :changed :removed elem)
   rxlist)
 
 (defwidget rx-widget ()
