@@ -11,7 +11,6 @@
 (require :mutils)
 (require :sgml-composer)
 (require :reblocks-extras-commands)
-(require :cl-json)
 
 (defpackage :reblocks-rx
   (:use :cl #:reblocks/html)
@@ -154,7 +153,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                      (when (eql event :changed)
                        (reblocks/extras/commands:set-attribute
                         widget
-                        (json:lisp-to-camel-case (symbol-name attr))
+                        (string-downcase (symbol-name attr))
                         (funcall value-reader))))))))
 
     ;; when a reactive variable of the body of the widget changes, update the widget
