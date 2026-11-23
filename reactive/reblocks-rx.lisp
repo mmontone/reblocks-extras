@@ -24,7 +24,9 @@
            #:get-dependencies
            #:sgml-widget
            #:render-sgml
-           #:with-rx-vals)
+           #:with-rx-vals
+           #:rxformula
+           #:set-html-attribute)
   (:documentation "Reactive Reblocks."))
 
 (in-package :reblocks-rx)
@@ -313,7 +315,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                               (with-output-to-string (reblocks/html:*stream*)
                                 (render widget))))
 
-(defclass rx-formula (rx-object)
+(defclass rx-formula (rxobject)
   ((rxvars :initarg :rxvars
            :accessor rxvars)
    (formula-fn :initarg :formula-fn
@@ -338,6 +340,11 @@ RXVARS is a list of reactive variables found in the body of the widget."
 
 ;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
 
+;; reactive widget attributes
+
+(defmethod set-html-attribute ((widget widget) attribute value)
+  (reblocks/extras/commands:set-attribute widget attribute value))
+
 (defwidget rx-attr-widget ()
   ((attributes :initarg :attributes
                :accessor html-attributes
@@ -345,8 +352,21 @@ RXVARS is a list of reactive variables found in the body of the widget."
                :documentation "A property list with HTML attributes for the widget. Attribute values can be reactive objects; when they change, the DOM is updated."))
   (:documentation "A widget that supports reactivity at attributes position."))
 
-(defmethod set-html-attribute ((widget widget) attribute value)
-  (reblocks/extras/commands:set-attribute widget attribute value))
+(defmethod initialize-instance :after ((widget rx-attr-widget) &rest initargs)
+  (declare (ignore initargs))
+  ;; subscribe to events in attributes
+  ;; change the HTML attribute value when some attribute changes
+  (let ((html-tag-and-attributes (reblocks/widget:get-html-tag widget)))
+    (let ((attributes (append (when (listp html-tag-and-attributes)
+                                (rest html-tag-and-attributes))
+                              (etypecase (html-attributes widget)
+                                (list (html-attributes widget))
+                                (function (funcall (html-attributes widget) widget))))))
+      (alexandria:doplist (attr-name attr-value attributes)
+        (when (typep attr-value 'rxobject)
+          (onevent attr-value (lambda (&rest args)
+                                (declare (ignore args))
+                                (set-html-attribute widget attr-name (@ attr-value)))))))))
 
 (defmethod reblocks/widget:get-html-tag :around ((widget rx-attr-widget))
   ;; return the widget attribute values
@@ -361,11 +381,11 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                 (function (funcall (html-attributes widget) widget))))))
       (if (not attributes)
           html-tag
-          (cons (car html-tag-and-attributes)
+          (cons html-tag
                 (mutils-utils:map-plist
                  (lambda (attr-name attr-value)
                    (declare (ignore attr-name))
-                   (if (typep attr-value 'rx-object)
+                   (if (typep attr-value 'rxobject)
                        (@  attr-value)
                        attr-value))
                  attributes))))))
