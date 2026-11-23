@@ -153,17 +153,17 @@
             :initform (make-rxval 0)))
   (:default-initargs
    :attributes (lambda (widget)
-                 (list :style (rxformula (format nil "background-color: ~a"
-                                                 (if (oddp (@ (counter widget)))
-                                                     "red"
-                                                     "blue")))))))
-
+                 (list :style (rxformula (format nil "background-color: rgb(~a, ~a, ~a)"
+                                                 (mod (+ (@ (counter widget)) 20) 255)
+                                                 (mod (+ (@ (counter widget)) 30) 255)
+                                                 (mod (+ (@ (counter widget)) 40) 255)))))))
+                                                 
 (defmethod render ((widget rx-attr-widget-test))
   (with-html ()
     (:input :type "button"
             :onclick (reblocks/actions:make-js-action (lambda (&rest args)
                                                         (declare (ignore args))
-                                                        (incf (@ (counter widget)))))
+                                                        (incf (@ (counter widget)) 10)))
             :value "Change color")))
 
 (reblocks/preview:preview (make-instance 'rx-attr-widget-test))
