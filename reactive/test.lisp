@@ -73,7 +73,7 @@
 
 (defmethod spinneret:html ((element sgml-composer:element))
   (sgml-composer:write-sgml element :destination spinneret:*html*
-                            :quote-char #\'))
+                                    :quote-char #\'))
 
 (defun sgml-test-1 ()
   (sgml-composer:sgml
@@ -98,8 +98,8 @@
     (with-sgml ()
       (:div ()
             (:h2 (:style (if (oddp (@ counter))
-                              "color:red;"
-                              "color:blue;"))
+                             "color:red;"
+                             "color:blue;"))
                  "A counter")
             (:div ()
                   (if (oddp (@ counter))
@@ -154,7 +154,7 @@
                                                  (mod (+ (@ (counter widget)) 20) 255)
                                                  (mod (+ (@ (counter widget)) 30) 255)
                                                  (mod (+ (@ (counter widget)) 40) 255)))))))
-                                                 
+
 (defmethod render ((widget rx-attr-widget-test))
   (with-html ()
     (:input :type "button"
@@ -164,3 +164,25 @@
             :value "Change color")))
 
 (reblocks/preview:preview (make-instance 'rx-attr-widget-test))
+
+(defwidget task-list (sgml-widget)
+  ((tasks :initform (make-rxlist)
+          :accessor tasks)))
+
+(defmethod render-sgml ((widget task-list))
+  (let (task-text)
+    (with-sgml ()
+      (:div ()
+            (:ul ()
+                 (dolist (task (@ (tasks widget)))
+                   (with-sgml () (:li () task))))
+            (:input (:type "text"
+                     :onchange (reblocks/extras/utils:make-js-value-action
+                                (lambda (&rest args &key value)
+                                  (declare (ignore args))
+                                  (setf task-text value)))))
+            (:input (:type "button"
+                     :onclick (reblocks/actions:make-js-action
+                               (lambda (&rest args)
+                                 (declare (ignore args))
+                                 (add task-text (tasks widget))))))))))

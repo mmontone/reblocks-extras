@@ -126,6 +126,9 @@
   ()
   (:documentation "A reactive list. Signals different events when element is added, inserted, removed."))
 
+(defun make-rxlist (&optional elems)
+  (make-instance 'rxlist :value elems))
+
 (defun add (elem rxlist)
   (push elem (@ rxlist))
   (emit rxlist :changed :insert elem 0)
@@ -256,16 +259,26 @@ RXVARS is a list of reactive variables found in the body of the widget."
       form
       (cond
         ((eql (first form) 'dolist)
-         (destructuring-bind ((var rxlist) &body body) (cdr form)
-           `(make-rxlist-widget ,rxlist
-                                (lambda (,var) ,@body))))
+         (destructuring-bind ((var lst) &body body) (cdr form)
+           (if (and (listp lst)
+                    (eql (car lst) '@))
+               `(make-rxlist-widget ,(cadr lst)
+                                    (lambda (,var)
+                                      ,@(transform-sgml-forms body)))
+               `(dolist (,var ,lst)
+                  ,@(transform-sgml-forms body)))))
         ((eql (first form) 'if)
          (destructuring-bind (test then else) (cdr form)
-           `(make-rxconditional-widget
-             (lambda () ,test)
-             (lambda () ,(transform-sgml-forms then))
-             (lambda () ,(transform-sgml-forms else))
-             :rxvars (list ,@(find-rxvars test)))))
+           (let ((rxvars (find-rxvars test)))
+             (if rxvars
+                 `(make-rxconditional-widget
+                   (lambda () ,test)
+                   (lambda () ,(transform-sgml-forms then))
+                   (lambda () ,(transform-sgml-forms else))
+                   :rxvars (list ,@rxvars)))
+             `(if ,test
+                  ,(transform-sgml-forms then)
+                  ,(transform-sgml-forms else)))))
         ((eql (first form) 'when)
          (destructuring-bind (test &body body) (cdr form)
            `(make-rxconditional-widget
