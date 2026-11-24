@@ -77,12 +77,15 @@ If PATH is present, then use jQuery.find method to stablish the target element f
    :value value
    :path path))
 
-(defun insert-child (widget child-widget index)
+(defun insert-child (widget child index)
   "Insert CHILD-WIDGET into WIDGET at INDEX."
   (reblocks/commands:add-command
    :insert-child
    :dom-id (reblocks/widgets/dom:dom-id widget)
-   :html (reblocks/widget:render child-widget)
+   :html (etypecase child
+           (reblocks/widget:widget (reblocks/widget:render child))
+           (string child)
+           (function (funcall child)))
    :index index))
 
 (defun inline-prompt (message action)
