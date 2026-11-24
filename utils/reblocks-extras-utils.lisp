@@ -19,7 +19,7 @@
   (:export #:defwidget*
            #:make-js-value-action
            #:test-session-code
-           #:with-test-session-code
+           #:with-test-session
            #:make-js-callback
            #:make-ps-callback
            #:let**
@@ -54,7 +54,7 @@ Example:
          (reblocks/page::*current-page* (make-instance 'reblocks/page::page)))
     (funcall func)))
 
-(defmacro with-test-session-code (&body body)
+(defmacro with-test-session (&body body)
   `(test-session-code (lambda () ,@body)))
 
 (defun make-js-callback (callback &rest args)
