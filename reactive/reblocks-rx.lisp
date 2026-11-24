@@ -212,15 +212,10 @@ RXVARS is a list of reactive variables found in the body of the widget."
 (defmethod render-sgml ((widget rxlist-widget))
   (sgml-composer:make-element
    (reblocks/extras/widgets:widget-html-tag widget)
-   nil
+   nil ;; FIXME
    (loop for elem in (@ (rxlist widget))
          collect
          (funcall (reblocks/extras/widgets:renderer widget) elem))))
-
-(defmethod sgml-composer:as-sgml ((widget rxlist-widget))
-  (sgml-composer:make-element :raw nil
-                              (with-output-to-string (reblocks/html:*stream*)
-                                (render widget))))
 
 (defmethod render ((widget rxlist-widget))
   (loop for elem in (@ (rxlist widget))
@@ -404,11 +399,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                    :quote-char #\')))
 
 (defmethod sgml-composer:as-sgml ((widget widget))
-  (if (typep widget 'sgml-widget)
-      (render-sgml widget)
-      (sgml-composer:make-element :raw nil
-                                  (with-output-to-string (reblocks/html:*stream*)
-                                    (render widget)))))
+  (sgml-composer:make-element :raw nil
+                              (with-output-to-string (reblocks/html:*stream*)
+                                (render widget))))
 
 ;; reactive widget attributes
 

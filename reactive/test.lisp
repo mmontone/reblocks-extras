@@ -187,7 +187,7 @@
                      :onclick (reblocks/actions:make-js-action
                                (lambda (&rest args)
                                  (declare (ignore args))
-                                 (add task-text (tasks widget))))
+                                 (add-last task-text (tasks widget))))
                      :value "Add task"))))))
 
 (reblocks/extras/utils:with-test-session
