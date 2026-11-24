@@ -8,7 +8,10 @@
                 #:make-js-action)
   (:export
    #:inline-widget
-   #:make-inline-widget))
+   #:make-inline-widget
+   #:widget-html-tag
+   #:widget-css-classes
+   #:renderer))
 
 (in-package :reblocks/extras/widgets)
 
