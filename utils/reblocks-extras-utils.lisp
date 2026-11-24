@@ -19,6 +19,7 @@
   (:export #:defwidget*
            #:make-js-value-action
            #:test-session-code
+           #:with-test-session-code
            #:make-js-callback
            #:make-ps-callback
            #:let**
@@ -52,6 +53,9 @@ Example:
          (reblocks/app::*current-app* (make-instance 'reblocks/app::app-routes :namespace ""))
          (reblocks/page::*current-page* (make-instance 'reblocks/page::page)))
     (funcall func)))
+
+(defmacro with-test-session-code (&body body)
+  `(test-session-code (lambda () ,@body)))
 
 (defun make-js-callback (callback &rest args)
   "Returns a javascript function to call CALLBACK."
