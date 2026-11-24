@@ -130,18 +130,18 @@
   (make-instance 'rxlist :value elems))
 
 (defun add (elem rxlist)
-  (push elem (@ rxlist))
-  (emit rxlist :changed :insert elem 0)
+  (push elem (slot-value rxlist 'value))
+  (emit rxlist :changed :inserted elem 0)
   rxlist)
 
 (defun add-last (elem rxlist)
-  (setf (@ rxlist)
+  (setf (slot-value rxlist 'value)
         (reblocks/utils/list:ninsert (@ rxlist) elem (length (@ rxlist))))
-  (emit rxlist :changed :insert elem (1- (length (@ rxlist))))
+  (emit rxlist :changed :inserted elem (1- (length (@ rxlist))))
   rxlist)
 
 (defun rxlist-remove (elem rxlist &key (test #'eql) key)
-  (setf (@ rxlist)
+  (setf (slot-value rxlist 'value)
         (remove elem (@ rxlist) :test test :key key))
   (emit rxlist :changed :removed elem)
   rxlist)
@@ -217,6 +217,19 @@ RXVARS is a list of reactive variables found in the body of the widget."
          collect
          (funcall (reblocks/extras/widgets:renderer widget) elem))))
 
+(defmethod sgml-composer:as-sgml ((widget rxlist-widget))
+  (sgml-composer:make-element :raw nil
+                                  (with-output-to-string (reblocks/html:*stream*)
+                                    (render widget))))
+
+(defmethod render ((widget rxlist-widget))
+  (loop for elem in (@ (rxlist widget))
+        do
+           (sgml-composer:write-sgml
+            (funcall (reblocks/extras/widgets:renderer widget) elem)
+            :destination reblocks/html:*stream*
+            :quote-char #\')))
+
 (defwidget rxconditional-widget (sgml-widget)
   ((test :initarg :test
          :accessor test-of)
@@ -231,12 +244,24 @@ RXVARS is a list of reactive variables found in the body of the widget."
   :span)
 
 (defun make-rxlist-widget (rxlist item-renderer &key html-tag attributes)
-  (make-instance 'rxlist-widget
-                 :rxlist rxlist
-                 :renderer item-renderer
-                 :html-tag (if attributes
-                               (cons html-tag attributes)
-                               html-tag)))
+  (let ((widget
+          (make-instance 'rxlist-widget
+                         :rxlist rxlist
+                         :renderer item-renderer
+                         :html-tag (if attributes
+                                       (cons html-tag attributes)
+                                       html-tag))))
+    (flet ((render-elem-to-string (elem)
+             (sgml-composer:write-sgml elem :quote-char #\')))
+      (onevent rxlist (lambda (event operation &rest args)
+                        (when (eql event :changed)
+                          (ecase operation
+                            (:inserted
+                             (destructuring-bind (elem index) args
+                               (reblocks/extras/commands:insert-child
+                                widget (render-elem-to-string elem)
+                                index))))))))
+    widget))
 
 (defun make-rxconditional-widget (test then else &key rxvars)
   (let ((widget
