@@ -123,7 +123,7 @@
 ;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
 
 (defclass rxlist (rxvalue)
-  ()
+  (())
   (:documentation "A reactive list. Signals different events when element is added, inserted, removed."))
 
 (defun make-rxlist (&optional elems)
@@ -205,11 +205,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
 
 ;; if rxlist emits a :changed event, then redraw the whole list
 ;; if rxlist emits a :added, :removed, :inserted event, then add, remove of insert an HTML node via Reblocks commands.
-(defwidget rxlist-widget ()
+(defwidget rxlist-widget (reblocks/extras/widgets:inline-widget)
   ((rxlist :initarg :rxlist
-           :accessor rxlist)
-   (item-renderer :initarg :item-renderer
-                  :accessor item-renderer)))
+           :accessor rxlist)))
 
 (defwidget rxconditional-widget (sgml-widget)
   ((test :initarg :test
@@ -224,10 +222,13 @@ RXVARS is a list of reactive variables found in the body of the widget."
 (defmethod reblocks/widget:get-html-tag ((widget rxconditional-widget))
   :span)
 
-(defun make-rxlist-widget (rxlist item-renderer)
+(defun make-rxlist-widget (rxlist item-renderer &key html-tag attributes)
   (make-instance 'rxlist-widget
                  :rxlist rxlist
-                 :item-renderer item-renderer))
+                 :renderer item-renderer
+                 :html-tag (if attributes
+                               (cons html-tag attributes)
+                               html-tag)))
 
 (defun make-rxconditional-widget (test then else &key rxvars)
   (let ((widget
@@ -253,6 +254,19 @@ RXVARS is a list of reactive variables found in the body of the widget."
           (funcall (else widget))
           ;; if there's no else clause then render empty
           (sgml-composer:sgml (:span ())))))
+
+(defun make-element (tag attributes children)
+  ;; we make an exception here
+  ;; if children is a reactive list widget, then we set its tag and attributes
+  ;; to the parent element and return it
+  (if (and (typep children 'rxlist-widget)
+           (null (reblocks/extras/widgets:widget-html-tag children)))
+      (progn
+        (setf (reblocks/extras/widgets:widget-html-tag children)
+              (cons tag attributes))
+        children)
+      ;; otherwise, just use sgml-composer
+      (sgml-composer:make-element tag attributes children)))
 
 (defun transform-sgml-forms (form)
   (if (atom form)
@@ -325,7 +339,7 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                  :rxvars (list ,@rxvars-in-body)))
                ;; otherwise create a normal sgml element
                (t
-                `(sgml-composer::make-element
+                `(make-element
                   ,tag
                   (list ,@attrs)
                   ,(cond

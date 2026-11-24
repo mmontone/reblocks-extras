@@ -186,3 +186,6 @@
                                (lambda (&rest args)
                                  (declare (ignore args))
                                  (add task-text (tasks widget))))))))))
+
+(reblocks/extras/utils:with-test-session
+  (render-sgml (make-instance 'task-list)))
