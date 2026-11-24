@@ -23,6 +23,7 @@
            #:toggle-css-class
            #:set-attribute
            #:insert-child
+           #:remove-child
            #:prompt
            #:confirm
            #:alert
@@ -86,6 +87,13 @@ If PATH is present, then use jQuery.find method to stablish the target element f
            (reblocks/widget:widget (reblocks/widget:render child))
            (string child)
            (function (funcall child)))
+   :index index))
+
+(defun remove-child (widget index)
+  "Insert CHILD-WIDGET into WIDGET at INDEX."
+  (reblocks/commands:add-command
+   :remove-child
+   :dom-id (reblocks/widgets/dom:dom-id widget)
    :index index))
 
 (defun inline-prompt (message action)
