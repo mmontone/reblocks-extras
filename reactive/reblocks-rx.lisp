@@ -205,9 +205,17 @@ RXVARS is a list of reactive variables found in the body of the widget."
 
 ;; if rxlist emits a :changed event, then redraw the whole list
 ;; if rxlist emits a :added, :removed, :inserted event, then add, remove of insert an HTML node via Reblocks commands.
-(defwidget rxlist-widget (reblocks/extras/widgets:inline-widget)
+(defwidget rxlist-widget (reblocks/extras/widgets:inline-widget sgml-widget)
   ((rxlist :initarg :rxlist
            :accessor rxlist)))
+
+(defmethod render-sgml ((widget rxlist-widget))
+  (sgml-composer:make-element
+   (reblocks/extras/widgets:widget-html-tag widget)
+   nil
+   (loop for elem in (@ (rxlist widget))
+         collect
+         (funcall (reblocks/extras/widgets:renderer widget) elem))))
 
 (defwidget rxconditional-widget (sgml-widget)
   ((test :initarg :test
@@ -263,7 +271,9 @@ RXVARS is a list of reactive variables found in the body of the widget."
            (null (reblocks/extras/widgets:widget-html-tag children)))
       (progn
         (setf (reblocks/extras/widgets:widget-html-tag children)
-              (cons tag attributes))
+              (if attributes
+                  (cons tag attributes)
+                  tag))
         children)
       ;; otherwise, just use sgml-composer
       (sgml-composer:make-element tag attributes children)))
@@ -369,9 +379,11 @@ RXVARS is a list of reactive variables found in the body of the widget."
                                    :quote-char #\')))
 
 (defmethod sgml-composer:as-sgml ((widget widget))
-  (sgml-composer:make-element :raw nil
-                              (with-output-to-string (reblocks/html:*stream*)
-                                (render widget))))
+  (if (typep widget 'sgml-widget)
+      (render-sgml widget)
+      (sgml-composer:make-element :raw nil
+                                  (with-output-to-string (reblocks/html:*stream*)
+                                    (render widget)))))
 
 ;; reactive widget attributes
 

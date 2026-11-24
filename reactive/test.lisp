@@ -1,3 +1,5 @@
+(require :reblocks-extras-utils)
+
 (in-package :reblocks-rx)
 
 (defvar *rxval1* (make-rxval 2))
@@ -178,14 +180,17 @@
                    (:li () task)))
             (:input (:type "text"
                      :onchange (reblocks/extras/utils:make-js-value-action
-                                (lambda (&rest args &key value)
+                                (lambda (&rest args &key value &allow-other-keys)
                                   (declare (ignore args))
                                   (setf task-text value)))))
             (:input (:type "button"
                      :onclick (reblocks/actions:make-js-action
                                (lambda (&rest args)
                                  (declare (ignore args))
-                                 (add task-text (tasks widget))))))))))
+                                 (add task-text (tasks widget))))
+                     :value "Add task"))))))
 
 (reblocks/extras/utils:with-test-session
   (render-sgml (make-instance 'task-list)))
+
+(reblocks/preview:preview (make-instance 'task-list))
