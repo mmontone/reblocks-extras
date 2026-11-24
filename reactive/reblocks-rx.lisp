@@ -141,10 +141,12 @@
   rxlist)
 
 (defun rxlist-remove (elem rxlist &key (test #'eql) key)
-  (setf (slot-value rxlist 'value)
-        (remove elem (@ rxlist) :test test :key key))
-  (emit rxlist :changed :removed elem)
-  rxlist)
+  (let ((pos (position elem (slot-value rxlist 'value))))
+    (when pos
+      (setf (slot-value rxlist 'value)
+            (remove elem (@ rxlist) :test test :key key))
+      (emit rxlist :changed :removed elem pos))
+    rxlist))
 
 (defwidget rx-widget ()
   ((renderer :initarg :renderer
@@ -255,7 +257,13 @@ RXVARS is a list of reactive variables found in the body of the widget."
                              (destructuring-bind (elem index) args
                                (reblocks/extras/commands:insert-child
                                 widget (render-elem-to-string elem)
-                                index))))))))
+                                index)))
+                            (:removed
+                             (destructuring-bind (elem index) args
+                               (declare (ignore elem))
+                               (reblocks/extras/commands:remove-child
+                                widget index)))
+                            )))))
     widget))
 
 (defun make-rxconditional-widget (test then else &key rxvars)

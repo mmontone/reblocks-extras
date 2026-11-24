@@ -19,6 +19,15 @@ function reblocksInsertChild(params) {
     insertAtIndex(target, jQuery(params.html), params.index);
 }
 
+function reblocksRemoveChild(params) {
+    var target = jQuery('#' + params.domId);
+    if (typeof params.path === 'string') {
+        target = target.find(params.path);
+    }
+
+    target.children().eq(params.index).remove();
+}
+
 function reblocksAddClass(params) {
     var target = jQuery('#' + params.domId);
     if (typeof params.path === 'string') {
@@ -85,6 +94,7 @@ window.addEventListener('DOMContentLoaded', function () {
     window.commandHandlers['toggleClass'] = reblocksToggleClass;
     window.commandHandlers['setAttribute'] = reblocksSetAttribute;
     window.commandHandlers['insertChild'] = reblocksInsertChild;
+    window.commandHandlers['removeChild'] = reblocksRemoveChild;
     window.commandHandlers['prompt'] = reblocksPrompt;
     window.commandHandlers['confirm'] = reblocksConfirm;
     window.commandHandlers['alert'] = reblocksAlert;

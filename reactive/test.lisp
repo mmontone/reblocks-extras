@@ -177,7 +177,15 @@
       (:div ()
             (:ul ()
                  (dolist (task (@ (tasks widget)))
-                   (:li () task)))
+                   (:li ()
+                        task
+                        (:button (:class "button"
+                                         :onclick (reblocks/actions:make-js-action
+                                                   (lambda (&rest args)
+                                                     (declare (ignore args))
+                                                     (rxlist-remove task (tasks widget)))))
+                                 "Remove")
+                        )))
             (:input (:type "text"
                      :onchange (reblocks/extras/utils:make-js-value-action
                                 (lambda (&rest args &key value &allow-other-keys)
