@@ -123,7 +123,7 @@
 ;; (macroexpand '(rxformula (+ (@ foo) (@ bar))))
 
 (defclass rxlist (rxvalue)
-  (())
+  ()
   (:documentation "A reactive list. Signals different events when element is added, inserted, removed."))
 
 (defun make-rxlist (&optional elems)
