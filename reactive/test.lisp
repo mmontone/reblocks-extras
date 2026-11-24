@@ -202,3 +202,19 @@
   (render-sgml (make-instance 'task-list)))
 
 (reblocks/preview:preview (make-instance 'task-list))
+
+(reblocks/preview:preview
+ (reblocks/extras/widgets:make-inline-widget
+  :div nil
+  (lambda (w)
+    (with-html ()
+      (:h3 "Reactive attributes")
+      (:div
+       (make-instance 'rx-attr-widget-test))
+      (:h3 "Tasks with reactive list")
+      (:div 
+       (make-instance 'task-list))
+      (:h3 "Reactive multicounter")
+      (:div 
+       (make-instance 'multicounter))
+      ))))
