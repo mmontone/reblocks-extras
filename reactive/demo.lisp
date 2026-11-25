@@ -1,6 +1,17 @@
+;; load this file to start a demo of reactive reblocks
+
 (require :reblocks-extras-utils)
 
-(in-package :reblocks-rx)
+(defpackage :reblocks-rx-demo
+  (:use #:cl #:reblocks/html #:reblocks-rx
+        #:reblocks/extras/utils)
+  (:import-from #:reblocks/widget
+                #:render
+                #:update
+                #:defwidget
+                #:widget))
+
+(in-package :reblocks-rx-demo)
 
 (defmethod reblocks/dependencies:get-dependencies ((app reblocks/preview:preview))
   (append (reblocks-rx:get-dependencies) (call-next-method)))
@@ -93,10 +104,10 @@
                    (:li ()
                         task
                         (:button (:class "button"
-                                         :onclick (reblocks/actions:make-js-action
-                                                   (lambda (&rest args)
-                                                     (declare (ignore args))
-                                                     (rxlist-remove task (tasks widget)))))
+                                  :onclick (reblocks/actions:make-js-action
+                                            (lambda (&rest args)
+                                              (declare (ignore args))
+                                              (rxlist-remove task (tasks widget)))))
                                  "Remove")
                         )))
             (:input (:type "text"
@@ -122,9 +133,9 @@
       (:div
        (make-instance 'rx-attr-widget-test))
       (:h3 "Tasks with reactive list")
-      (:div 
+      (:div
        (make-instance 'task-list))
       (:h3 "Reactive multicounter")
-      (:div 
+      (:div
        (make-instance 'multicounter))
       ))))

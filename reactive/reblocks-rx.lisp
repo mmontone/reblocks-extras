@@ -19,7 +19,15 @@
            #:render-sgml
            #:with-rx-vals
            #:rxformula
-           #:set-html-attribute)
+           #:set-html-attribute
+           #:with-sgml
+           #:make-rxval
+           #:rx-attr-widget
+           #:rxobject
+           #:make-rxlist
+           #:add
+           #:add-last
+           #:rxlist-remove)
   (:documentation "Reactive Reblocks."))
 
 (in-package :reblocks-rx)
