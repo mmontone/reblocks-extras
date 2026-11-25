@@ -28,13 +28,16 @@ Notifications for Reblocks.
 ### notify
 
 ```lisp
-(message style &key target options)
+(message &optional (style "info") target &rest options)
 ```
 
 Notify MESSAGE using STYLE.
 
 
 
-Example:
+Examples:
 
     (notify "Hello world" "success")
+    (notify "Hello world" "success" "#myElem")
+    (notify "Hello world" "success" "#myElem" :|position| "topcenter")
+    (notify "Hello world" "success" nil :|position| "topcenter")

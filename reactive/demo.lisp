@@ -82,9 +82,10 @@
 (defmethod render ((widget rx-attr-widget-test))
   (with-html ()
     (:input :type "button"
-            :onclick (reblocks/actions:make-js-action (lambda (&rest args)
-                                                        (declare (ignore args))
-                                                        (incf (@ (counter widget)) 10)))
+            :onclick (reblocks/actions:make-js-action
+                      (lambda (&rest args)
+                        (declare (ignore args))
+                        (incf (@ (counter widget)) 10)))
             :value "Change color")))
 
 ;; (reblocks/preview:preview (make-instance 'rx-attr-widget-test))

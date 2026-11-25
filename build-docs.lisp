@@ -19,7 +19,9 @@
     ("forms/" "reblocks-forms.lisp" :reblocks/forms)
     ("browser-history/" "reblocks-browser-history.lisp" :reblocks/browser-history)
     ("notify/" "reblocks-notify.lisp" :reblocks/notify)
-    ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)))
+    ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)
+    ("widgets/" "reblocks-extras-widgets.lisp" :reblocks/extras/widgets)
+    ("reactive/" "reblocks-rx.lisp" :reblocks-rx)))
 
 (defun generate-readmes (&optional (modules-desc *reblocks-modules*))
   (dolist (module-desc modules-desc)

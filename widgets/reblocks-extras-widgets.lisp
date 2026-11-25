@@ -1,3 +1,23 @@
+;;; reblocks-extras-widgets --- Extra widgets for Reblocks.
+
+;; Copyright (C) 2025 Mariano Montone. All rights reserved.
+
+;; This work is licensed under the terms of the MIT license.
+;; For a copy, see <https://opensource.org/licenses/MIT>.
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; Version: 0.1
+
+;;; Commentary:
+;;
+;; Extra widgets for Reblocks.
+;;
+;; Usage:
+;;
+;; TODO
+;;
+;;; Code:
+
 (defpackage :reblocks/extras/widgets
   (:use :cl #:reblocks/html)
   (:import-from #:reblocks/widget

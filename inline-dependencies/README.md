@@ -14,6 +14,14 @@ Inline dependencies for Reblocks web framework.
 
 
 
+## Functions
+### get-dependencies
+
+```lisp
+()
+```
+
+
 ## Classes
 ### inline-dependencies
 ### inline-dependency

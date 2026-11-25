@@ -1,3 +1,15 @@
+;;; reblocks-rx --- Reactive Reblocks.
+
+;; Copyright (C) 2026 Mariano Montone. All rights reserved.
+
+;; This work is licensed under the terms of the MIT license.
+;; For a copy, see <https://opensource.org/licenses/MIT>.
+
+;; Author: Mariano Montone <marianomontone@gmail.com>
+;; Version: 0.1
+
+;;; Commentary:
+;;
 ;; Reactive Reblocks provides Reblocks widgets that update with increased granularity;
 ;; instead of redrawing the whole widget, only specific parts of it are redrawn.
 ;; This can be useful for certain widgets that want to prevent losing the current
@@ -5,6 +17,12 @@
 ;; if the widget that contains it is redrawn; in that situation could be better
 ;; to be able to redraw only certain parts of the widget and prevent losing the
 ;; value and status (like current focus) of the inputs.
+;;
+;; Usage:
+;;
+;; TODO
+;;
+;;; Code:
 
 (defpackage :reblocks-rx
   (:use :cl #:reblocks/html)

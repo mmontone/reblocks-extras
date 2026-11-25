@@ -83,14 +83,20 @@ Widget definition macro on top of [REBLOCKS/WIDGET:DEFWIDGET](REBLOCKS/WIDGET:DE
 
 
 Options:
-(:renderer (widget) &body body)
-Specify the widget renderer method, inline.
+(:render (widget) &body body)
+Specify the widget render method, inline.
 
-(:html-tag <html-tag-keyword>)
+(:html-tag html-tag)
 HTML tag to use by the widget, via [REBLOCKS/WIDGET:GET-HTML-TAG](REBLOCKS/WIDGET:GET-HTML-TAG) .
+
+(:html-tag (widget) &body body)
+HTML tag method. Should return an HTML tag, or (html-tag . attributes) for the widget.
 
 (:css-classes css-classes-list &key (inherit t))
 CSS classes for the widget, via [REBLOCKS/WIDGET:GET-CSS-CLASSES](REBLOCKS/WIDGET:GET-CSS-CLASSES) .
+
+(:css-classes-method (widget) &body body)
+CSS classes method. Should return a list of CSS classes for the widget.
 
 (:dependencies &rest (dependency-class &rest initargs))
 List of widget dependencies.
@@ -108,6 +114,14 @@ Parallel let
 
 
 ### make-js-action\*
+
+```lisp
+(&body body)
+```
+
+
+
+### with-test-session
 
 ```lisp
 (&body body)
