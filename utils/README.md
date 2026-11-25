@@ -121,6 +121,30 @@ Parallel let
 
 
 
+### ui
+
+```lisp
+(&body body)
+```
+
+Render HTML with updatable areas.
+
+
+
+Example:
+
+(let ((elems (list 1 2 3)))
+  (ui
+    (:div
+     (area my-list
+           (:ul :css-classes (list "list")
+                (dolist (elem elems)
+                  (:li elem))))
+     (:button :onclick (make-js-action (lambda (&rest _args)
+                                         (push (random-string) elems)
+                                         (update (area my-list))))
+              "Add"))))
+
 ### with-test-session
 
 ```lisp

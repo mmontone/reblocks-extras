@@ -3,4 +3,4 @@
   :components ((:module "utils"
                 :components
                 ((:file "reblocks-extras-utils"))))
-  :depends-on (:reblocks))
+  :depends-on (:reblocks :reblocks-extras-widgets))

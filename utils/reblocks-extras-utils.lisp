@@ -24,7 +24,8 @@
            #:make-ps-callback
            #:let**
            #:make-js-action*
-           #:css-classes))
+           #:css-classes
+           #:ui))
 
 (in-package :reblocks/extras/utils)
 
@@ -202,3 +203,58 @@ List of widget dependencies."
  '(defwidget* my-widget ()
    ()
    (:dependencies (dependency2 :config "value"))))
+
+(defmacro ui (&body body)
+  "Render HTML with updatable areas.
+
+Example:
+
+(let ((elems (list 1 2 3)))
+  (ui
+    (:div
+     (area my-list
+           (:ul :css-classes (list \"list\")
+                (dolist (elem elems)
+                  (:li elem))))
+     (:button :onclick (make-js-action (lambda (&rest _args)
+                                         (push (random-string) elems)
+                                         (update (area my-list))))
+              \"Add\"))))"
+  (let ((areas (gensym "areas-")))
+    `(let ((,areas (make-hash-table)))
+       (macrolet ((area (name &optional spinneret-form)
+                    (if (null spinneret-form)
+                        ;; if there's no spinneret-form, then this is
+                        ;; an area reading form
+                        `(gethash ',name ,',areas)
+                        ;; otherwise, create the area widget
+                        ;; this is a bit of a hack, take the already expanded
+                        ;; spinneret form (with-tag (:tag &rest attrs) &body body)
+                        ;; and transform it
+                        (destructuring-bind (with-tag (html-tag &rest attrs) &rest area-body) spinneret-form
+                          (let ((widget-attrs (alexandria:remove-from-plist attrs :class)))
+                            (declare (ignore with-tag))
+                            `(render (setf (gethash ',name ,',areas)
+                                           (reblocks/extras/widgets:make-inline-widget
+                                            ,(if widget-attrs
+                                                 (cons html-tag widget-attrs)
+                                                 html-tag)
+                                            widget-attrs
+                                            (lambda (,name)
+                                              (declare (ignorable ,name))
+                                              ,@area-body)))))))))
+         (reblocks/html:with-html ()
+           ,@body)))))
+
+#+test
+(let ((elems (list 1 2 3)))
+  (ui
+    (:div
+     (area my-list
+           (:ul :css-classes (list "list")
+                (dolist (elem elems)
+                  (:li elem))))
+     (:button :onclick (make-js-action (lambda (&rest _args)
+                                         (push (random-string) elems)
+                                         (update (area my-list))))
+              "Add"))))
