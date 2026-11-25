@@ -21,7 +21,8 @@
     ("notify/" "reblocks-notify.lisp" :reblocks/notify)
     ("utils/" "reblocks-extras-utils.lisp" :reblocks/extras/utils)
     ("widgets/" "reblocks-extras-widgets.lisp" :reblocks/extras/widgets)
-    ("reactive/" "reblocks-rx.lisp" :reblocks-rx)))
+    ("reactive/" "reblocks-rx.lisp" :reblocks-rx)
+    ("commands/" "reblocks-extras-commands.lisp" :reblocks/extras/commands)))
 
 (defun generate-readmes (&optional (modules-desc *reblocks-modules*))
   (dolist (module-desc modules-desc)
