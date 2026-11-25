@@ -119,7 +119,8 @@
                      :onclick (reblocks/actions:make-js-action
                                (lambda (&rest args)
                                  (declare (ignore args))
-                                 (add-last task-text (tasks widget))))
+                                 (when (not (find task-text (@ (tasks widget))))
+                                   (add-last task-text (tasks widget)))))
                      :value "Add task"))))))
 
 ;; (reblocks/preview:preview (make-instance 'task-list))
