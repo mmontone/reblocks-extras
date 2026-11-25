@@ -6,13 +6,6 @@
 ;; to be able to redraw only certain parts of the widget and prevent losing the
 ;; value and status (like current focus) of the inputs.
 
-(require :reblocks)
-(require :trivial-garbage)
-(require :mutils)
-(require :sgml-composer)
-(require :reblocks-extras-commands)
-(require :reblocks-extras-widgets)
-
 (defpackage :reblocks-rx
   (:use :cl #:reblocks/html)
   (:import-from #:reblocks/widget
